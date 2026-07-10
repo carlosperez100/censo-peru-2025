@@ -69,9 +69,13 @@ footer{max-width:960px;margin:8px auto 30px;padding:0 16px;font-size:12px;color:
   <div class="bars" id="bars"></div>
   <div class="note" id="note"></div>
 </div></div>
-<footer>Fuente: <a href="https://data.worldbank.org" target="_blank" rel="noopener">Banco Mundial</a> (indicadores OMS
- SH.MED.PHYS.ZS y SH.MED.NUMW.P3), último año disponible por país. La densidad del Perú en el censo/SUSALUD
- (~19 méd/10k, personal en IPRESS) difiere del dato OMS (16,9, médicos activos a nivel nacional) por metodología.
+<footer><b>Fuentes:</b> Banco Mundial — Indicadores del Desarrollo Mundial (datos OMS / Global Health Observatory):
+ <a href="https://data.worldbank.org/indicator/SH.MED.PHYS.ZS" target="_blank" rel="noopener">Médicos por 1 000 hab (SH.MED.PHYS.ZS)</a> ·
+ <a href="https://data.worldbank.org/indicator/SH.MED.NUMW.P3" target="_blank" rel="noopener">Enfermeras y parteras por 1 000 hab (SH.MED.NUMW.P3)</a>,
+ último año disponible por país (indicado en la tabla). Convertido a por 10 000 hab (×10).
+ <br><b>Nota:</b> la densidad del Perú en el censo/SUSALUD (~19 méd/10k, personal en IPRESS que reporta) difiere del
+ dato OMS (16,9, médicos activos a nivel nacional) por metodología. Datos:
+ <a href="https://github.com/carlosperez100/censo-peru-2025" target="_blank" rel="noopener">repositorio</a>.
  Visualización <span class="gem">Modelo GEMSES</span> · Carlos Pérez Pérez.</footer>
 <script>
 const D=__DATA__; let cur="med";

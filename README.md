@@ -97,6 +97,12 @@ sin códigos duplicados. Los 10 pendientes son **distritos creados después del 
 `ref/ubigeo_overrides.csv`. Así cualquier sistema (SISOL, IPRESS, turismo, salud) enlaza con
 el censo por `ubigeo_inei` a nivel departamento/provincia/distrito.
 
+## Fuentes (con enlace)
+- **INEI · Censos Nacionales 2025** — [Tabulados de Población](https://censos2025.inei.gob.pe/resultados/descarga-de-datos/cuadros-estadisticos/tabulados/tabulados-poblacion) (cuadros INDDEM01/06, SALUD06) y [Tabulados de Vivienda](https://censos2025.inei.gob.pe/resultados/descarga-de-datos/cuadros-estadisticos/tabulados/tabulados-vivienda) (VIV1).
+- **SUSALUD · Datos Abiertos** — [RENIPRESS 2026](http://datos.susalud.gob.pe/dataset/registro-nacional-de-ipress-renipress) (establecimientos) y [Recursos de Salud por IPRESS 2026](http://datos.susalud.gob.pe/dataset/consulta-recursos-de-salud-por-ipress) (RR.HH.).
+- **Banco Mundial / OMS** — [Médicos por 1 000 hab (SH.MED.PHYS.ZS)](https://data.worldbank.org/indicator/SH.MED.PHYS.ZS) y [Enfermeras y parteras por 1 000 hab (SH.MED.NUMW.P3)](https://data.worldbank.org/indicator/SH.MED.NUMW.P3).
+- **UBIGEO oficial** — catálogo INEI/RENIEC ([jmcastagnetto/ubigeo-peru-aumentado](https://github.com/jmcastagnetto/ubigeo-peru-aumentado)). **Geometría** — [juaneladio/peru-geojson](https://github.com/juaneladio/peru-geojson).
+
 ## Reproducir
 ```bash
 python etl_censo2025.py                 # reconstruye censo2025.db desde raw/
