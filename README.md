@@ -11,9 +11,10 @@ interactivo** del Perú con marca GEMSES.
 Réplica del visor del INEI, alimentada por `censo2025.db`, con el **Modelo GEMSES**:
 - **Header = recuadro oficial INEI**: Población **total** (34 157 732), **censada** (32 706 028),
   **omitida** (1 451 704), **viviendas particulares** (13 762 606) y **hogares** (10 570 171).
-- **Dos capas**: *Demografía* (población total/censada, % omisión, densidad, % urbana, % mujeres,
-  viviendas, hogares) y **Salud — afiliación a seguro** (% con seguro, **% SIS**, **% EsSalud**,
-  % sin seguro, % privado).
+- **Tres capas**: *Demografía* (población total/censada, % omisión, densidad, % urbana, % mujeres,
+  viviendas, hogares), **Salud — afiliación a seguro** (% con seguro, **% SIS**, **% EsSalud**,
+  % sin seguro, % privado) y **Oferta de salud — SUSALUD** (**médicos, enfermeras, obstetras,
+  odontólogos, camas por 10 000 hab** y n.º de IPRESS).
 - **Drill-down**: clic en un departamento → mapa de sus **provincias** (con zoom), tanto para
   demografía como para salud; botón «← Perú» para volver.
 - **Panel «¿Dónde están los afiliados?»**: desglose SIS / EsSalud / privado / sin seguro por unidad.
@@ -74,6 +75,19 @@ pd.read_sql("SELECT ubigeo_nombre, valor FROM v_dato_geo "
 Vistas listas: **`v_dato`** (dato + tema + cuadro + textos) y **`v_dato_geo`** (con
 geografía resuelta por nombre a nivel nacional/departamento/provincia).
 
+## Oferta de salud (SUSALUD) — base integrada
+Además del censo, la base integra por **UBIGEO** los datos de [SUSALUD](http://datos.susalud.gob.pe):
+- `ipress` — **26 733 establecimientos** del RENIPRESS 2026 (MINSA/Gob. Regional, EsSalud, privados,
+  municipal/SISOL, FFAA/policiales, INPE), con institución, categoría, ubigeo y coordenadas.
+- `salud_rrhh` — recursos por IPRESS (Consulta A): médicos, enfermeras, odontólogos, obstetras,
+  camas, consultorios, ambulancias (último registro por IPRESS).
+- `densidad_salud` — **profesionales por 10 000 hab** por departamento y provincia, cruzando el
+  personal con la población total del censo. Nacional: **médicos 15,9 · enfermeras 15,1** por 10k.
+  Se regenera con `python integrar_salud.py` (o dentro de `etl_censo2025.py`).
+
+> Cobertura: el módulo de recursos lo reportan sobre todo IPRESS públicas; el sector privado está
+> subrepresentado en RR.HH. (aunque sí en el conteo de establecimientos).
+
 ## Enlazar con otros proyectos — indexado por UBIGEO
 Cada unidad de `dim_ubigeo` tiene su **código UBIGEO oficial del INEI** (`ubigeo_inei`, 6
 dígitos DDPPDD), resuelto por emparejamiento jerárquico contra `ref/ubigeo_inei.csv`.
@@ -94,6 +108,7 @@ python ../../../gemses-grafos/grafos_censo2025/build_grafo_censo.py   # regenera
    `ref/ubigeo_overrides.csv`.
 2. ✅ **Afiliación a seguro de salud** integrada (`v_seguro`) y mapeada (SIS/EsSalud/privado/sin seguro).
 3. ✅ **Drill-down** departamento→provincia en el mapa.
-4. Incorporar Tabulados de **Vivienda**, **Hogar** y **Comunidades Indígenas** (mismo método).
-5. Drill-down a **distrito** (población; salud solo llega a provincia en el censo).
-6. Vistas curadas por dimensión (sexo/edad/área) para los cuadros demográficos clave.
+4. ✅ **Oferta de salud SUSALUD** integrada (IPRESS + RR.HH.) y densidad por 10 000 hab en el mapa.
+5. Incorporar Tabulados de **Hogar** y **Comunidades Indígenas**, y servicios básicos de vivienda.
+6. Drill-down a **distrito** (población; salud/oferta a nivel provincia).
+7. Cruce oferta vs. demanda (IPRESS/RR.HH. vs. población asegurada) por ubigeo.

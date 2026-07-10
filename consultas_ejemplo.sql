@@ -65,3 +65,17 @@ ORDER BY u.ubigeo_inei;
 
 -- 11) Buscar cualquier unidad por su código UBIGEO (ej. distrito de Miraflores 150122)
 SELECT ubigeo_inei, nombre, nivel FROM dim_ubigeo WHERE ubigeo_inei LIKE '1501%' LIMIT 15;
+
+-- 12) OFERTA DE SALUD: densidad de profesionales por 10,000 hab por departamento
+SELECT ds.ubigeo, u.nombre AS departamento, ds.poblacion, ds.n_ipress,
+       ds.d_medicos, ds.d_enfermeras, ds.d_obstetras, ds.d_odontologos
+FROM densidad_salud ds JOIN dim_ubigeo u ON u.ubigeo_inei = ds.ubigeo||'0000'
+WHERE ds.nivel='departamento' ORDER BY ds.d_medicos DESC;
+
+-- 13) IPRESS por institución (MINSA, EsSalud, privado, SISOL/municipal, FFAA...)
+SELECT institucion, sector, COUNT(*) AS n_establecimientos
+FROM ipress GROUP BY institucion, sector ORDER BY n_establecimientos DESC;
+
+-- 14) IPRESS de EsSalud en un departamento (por ubigeo)
+SELECT nombre, categoria, distrito FROM ipress
+WHERE sector='EsSalud' AND substr(ubigeo,1,2)='15' ORDER BY categoria;

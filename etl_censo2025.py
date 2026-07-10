@@ -411,6 +411,16 @@ def main():
                   ("SELECT COUNT(*) FROM v_dato_geo","datos_geo")]:
         print(f"  {lbl:>10}: {cx.execute(q).fetchone()[0]:,}")
     con.close()
+
+    # ---- integrar OFERTA DE SALUD de SUSALUD (IPRESS + RRHH + densidad por 10k) ----
+    if os.path.exists(os.path.join(RAW, "susalud", "RENIPRESS.csv")):
+        try:
+            import integrar_salud
+            integrar_salud.main(DB)
+            print("  SUSALUD integrado (ipress + salud_rrhh + densidad_salud)")
+        except Exception as e:
+            print("  (SUSALUD no integrado:", e, ")")
+
     print("Peso censo2025.db:", os.path.getsize(DB)//1024, "KB")
 
 if __name__ == "__main__":

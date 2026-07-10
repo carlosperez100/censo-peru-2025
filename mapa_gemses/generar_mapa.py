@@ -49,6 +49,7 @@ header{background:linear-gradient(120deg,var(--navy),var(--blue) 58%,var(--teal)
 .ind:hover{border-color:var(--blue2)}
 .ind.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 .ind.salud.active{background:var(--teal);border-color:var(--teal)}
+.ind.oferta.active{background:var(--gold);border-color:var(--gold);color:#3a2d00}
 .bc{display:flex;align-items:center;gap:8px;font-size:13px;margin:10px 0 6px;color:var(--muted)}
 .bc button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 9px;font-size:12px;cursor:pointer;color:var(--blue)}
 .bc b{color:var(--navy)}
@@ -112,6 +113,8 @@ footer .gem{color:var(--navy);font-weight:700}
     <div class="controls" id="cDemo"></div>
     <div class="grp">Salud — afiliación a seguro</div>
     <div class="controls" id="cSalud"></div>
+    <div class="grp">Oferta de salud — SUSALUD (por 10 000 hab)</div>
+    <div class="controls" id="cOferta"></div>
     <div class="bc" id="bc"></div>
     <svg id="map" viewBox="0 0 __W__ __H__" role="img" aria-label="Mapa del Perú"></svg>
     <div class="legend"><span id="lmin">0</span><div class="ramp" id="ramp"></div><span id="lmax">—</span></div>
@@ -124,6 +127,8 @@ footer .gem{color:var(--navy);font-weight:700}
       <div class="kpis" id="dKpis"></div>
       <div class="grp">¿Dónde están los afiliados? (% de la población)</div>
       <div class="seg" id="dSeg"></div>
+      <div class="grp" style="margin-top:12px">Oferta de salud (SUSALUD) · por 10 000 hab</div>
+      <div class="kpis" id="dOfe"></div>
     </div>
     <div class="card">
       <h2 id="rankTitle">Ranking</h2>
@@ -133,10 +138,12 @@ footer .gem{color:var(--navy);font-weight:700}
 </div>
 <div class="tip" id="tip"></div>
 <footer>
-  Fuente: <a href="https://censos2025.inei.gob.pe" target="_blank" rel="noopener">INEI — Censos Nacionales 2025</a>
-  (Tabulados de Población, cuadros INDDEM01 y SALUD06). La afiliación puede ser múltiple, por eso los
-  porcentajes por tipo pueden sumar más de 100%. Visualización <span class="gem">Modelo GEMSES</span> ·
-  Carlos Pérez Pérez · base relacional única indexada por UBIGEO (censo2025.db).
+  Fuentes: <a href="https://censos2025.inei.gob.pe" target="_blank" rel="noopener">INEI — Censos Nacionales 2025</a>
+  (población, vivienda y afiliación a seguro) y <a href="http://datos.susalud.gob.pe" target="_blank" rel="noopener">SUSALUD</a>
+  (RENIPRESS 2026 y Recursos de Salud por IPRESS). La afiliación puede ser múltiple (los % por tipo pueden sumar >100%);
+  la oferta de RR.HH. cubre principalmente IPRESS que reportan a SUSALUD (privados subrepresentados). Densidades por
+  10 000 hab sobre población total del censo. Base única integrada por UBIGEO. Visualización
+  <span class="gem">Modelo GEMSES</span> · Carlos Pérez Pérez.
 </footer>
 
 <script>
@@ -158,13 +165,23 @@ const SALUD=[
  {k:"psin",t:"% Sin seguro",fmt:v=>v.toFixed(1),suf:"%",sal:1},
  {k:"ppri",t:"% Privado",fmt:v=>v.toFixed(1),suf:"%",sal:1},
 ];
-const ALL=[...DEMO,...SALUD];
+const OFERTA=[
+ {k:"dmed",t:"Médicos /10k",fmt:v=>v.toFixed(1),suf:"",ofe:1},
+ {k:"denf",t:"Enfermeras /10k",fmt:v=>v.toFixed(1),suf:"",ofe:1},
+ {k:"dobs",t:"Obstetras /10k",fmt:v=>v.toFixed(1),suf:"",ofe:1},
+ {k:"dodo",t:"Odontólogos /10k",fmt:v=>v.toFixed(1),suf:"",ofe:1},
+ {k:"dcam",t:"Camas /10k",fmt:v=>v.toFixed(1),suf:"",ofe:1},
+ {k:"nip",t:"N.º de IPRESS",fmt:v=>v.toLocaleString("es-PE"),suf:"",ofe:1},
+];
+const ALL=[...DEMO,...SALUD,...OFERTA];
 let cur=DEMO[0], level="nac";  // "nac" o codigo de depto
 
 function lerp(a,b,t){return a+(b-a)*t}
 function hx(c){return c.toString(16).padStart(2,"0")}
-function color(t,salud){const c0=salud?[224,244,244]:[234,241,251], c1=salud?[10,84,84]:[10,46,92];
+function color(t,mode){const S={demo:[[234,241,251],[10,46,92]],salud:[[224,244,244],[10,84,84]],ofe:[[251,243,220],[150,95,8]]};
+ const [c0,c1]=S[mode]||S.demo;
  return "#"+hx(Math.round(lerp(c0[0],c1[0],t)))+hx(Math.round(lerp(c0[1],c1[1],t)))+hx(Math.round(lerp(c0[2],c1[2],t)));}
+function modeOf(){return cur.sal?"salud":(cur.ofe?"ofe":"demo");}
 const svg=document.getElementById("map"), tip=document.getElementById("tip");
 let selected=null;
 
@@ -173,7 +190,7 @@ function nameOf(u){ return level==="nac"? u.dep : u.prov; }
 
 function render(){
  const ds=dataset(), vals=ds.map(d=>d[cur.k]).filter(v=>v!=null&&!isNaN(v));
- const mn=Math.min(...vals), mx=Math.max(...vals), sal=!!cur.sal;
+ const mn=Math.min(...vals), mx=Math.max(...vals), md=modeOf();
  // viewBox: nacional o bbox del departamento
  if(level==="nac"){ svg.setAttribute("viewBox","0 0 __W__ __H__"); }
  else{ const dp=DEPS.find(d=>d.cod===level); if(dp&&dp.vb) svg.setAttribute("viewBox",dp.vb.join(" ")); }
@@ -182,14 +199,14 @@ function render(){
    const raw=d[cur.k], t=(mx>mn&&raw!=null)?(raw-mn)/(mx-mn):0;
    const p=document.createElementNS("http://www.w3.org/2000/svg","path");
    p.setAttribute("d",d.d); p.setAttribute("class","u");
-   p.setAttribute("fill", raw==null?"#dfe6f0":color(t,sal));
+   p.setAttribute("fill", raw==null?"#dfe6f0":color(t,md));
    p.addEventListener("mousemove",e=>{tip.style.opacity=1;tip.style.left=(e.clientX+14)+"px";tip.style.top=(e.clientY-8)+"px";
      tip.innerHTML=`<b>${nameOf(d)}</b><br>${cur.t}: ${raw==null?"s/d":cur.fmt(raw)+cur.suf}`;});
    p.addEventListener("mouseleave",()=>tip.style.opacity=0);
    p.addEventListener("click",()=>{ if(level==="nac"){ drill(d.cod); } else { selected=d; detail(d);} });
    svg.appendChild(p);
  });
- document.getElementById("ramp").style.background=`linear-gradient(90deg,${color(0,sal)},${color(.5,sal)},${color(1,sal)})`;
+ document.getElementById("ramp").style.background=`linear-gradient(90deg,${color(0,md)},${color(.5,md)},${color(1,md)})`;
  document.getElementById("lmin").textContent=isFinite(mn)?cur.fmt(mn)+cur.suf:"—";
  document.getElementById("lmax").textContent=isFinite(mx)?cur.fmt(mx)+cur.suf:"—";
  ranking(ds,mn,mx); crumbs();
@@ -218,6 +235,9 @@ function detail(d){
  const mx=Math.max(...segs.map(s=>s[1]),1);
  document.getElementById("dSeg").innerHTML=segs.map(s=>
    `<div class="row"><span>${s[0]}</span><span class="bar"><i style="width:${Math.round(s[1]/mx*100)}%;background:${s[2]}"></i></span><span class="val">${s[1]}%</span></div>`).join("");
+ const of=[["IPRESS",(d.nip||0).toLocaleString("es-PE")],["Médicos /10k",(d.dmed||0).toFixed(1)],
+   ["Enfermeras /10k",(d.denf||0).toFixed(1)],["Obstetras /10k",(d.dobs||0).toFixed(1)]];
+ document.getElementById("dOfe").innerHTML=of.map(x=>`<div class="kpi"><div class="v">${x[1]}</div><div class="l">${x[0]}</div></div>`).join("");
 }
 function drill(cod){ level=cod; selected=null; render(); const dp=DEPS.find(d=>d.cod===cod); if(dp) detail(dp); }
 function crumbs(){
@@ -228,14 +248,17 @@ function crumbs(){
    document.getElementById("back").addEventListener("click",()=>{level="nac";selected=null;render();detail(nac());}); }
 }
 function nac(){ const s=k=>DEPS.reduce((a,d)=>a+(d[k]||0),0); const pob=s("pob"),ptot=s("ptot");
- return {dep:"Perú",pob:pob,ptot:ptot,viv:s("viv"),hog:s("hog"),den:0,
+ const D=k=>+((DEPS.reduce((a,d)=>a+(d[k]||0)*(d.ptot||0)/10000,0))/ptot*10000).toFixed(1);
+ return {dep:"Perú",pob:pob,ptot:ptot,viv:s("viv"),hog:s("hog"),den:0,nip:s("nip"),
+  dmed:D("dmed"),denf:D("denf"),dobs:D("dobs"),dodo:D("dodo"),dcam:D("dcam"),
   pcon:+((pob-s("sin"))/pob*100).toFixed(1),psin:+(s("sin")/pob*100).toFixed(1),
   psis:+(s("sis")/pob*100).toFixed(1),pess:+(s("essalud")/pob*100).toFixed(1),
-  ppri:+(s("priv")/pob*100).toFixed(1),pmuis:0,pomis:+(s("pomit")/ptot*100).toFixed(1)}; }
+  ppri:+(s("priv")/pob*100).toFixed(1),pomis:+(s("pomit")/ptot*100).toFixed(1)}; }
 
 // controles
 document.getElementById("cDemo").innerHTML=DEMO.map((i,x)=>`<button class="ind${x===0?' active':''}" data-k="${i.k}">${i.t}</button>`).join("");
 document.getElementById("cSalud").innerHTML=SALUD.map(i=>`<button class="ind salud" data-k="${i.k}">${i.t}</button>`).join("");
+document.getElementById("cOferta").innerHTML=OFERTA.map(i=>`<button class="ind oferta" data-k="${i.k}">${i.t}</button>`).join("");
 document.querySelectorAll(".ind").forEach(b=>b.addEventListener("click",()=>{
  document.querySelectorAll(".ind").forEach(x=>x.classList.remove("active"));
  b.classList.add("active"); cur=ALL.find(i=>i.k===b.dataset.k); render();}));
@@ -332,6 +355,17 @@ for inei, nom, lv, pob, sin, sis, es, ff, pr, ot in cx.execute("""
     if d == "0700": d = "0701"
     prov_seg[d] = dict(pob=pob or 0, sin=sin or 0, sis=sis or 0, essalud=es or 0,
                        ffaa=ff or 0, priv=pr or 0, otro=ot or 0)
+
+# oferta de salud (SUSALUD): densidad por 10k por DD (dep) y DDPP (prov)
+DENS_D, DENS_P = {}, {}
+try:
+    for lv, dic in (("departamento", DENS_D), ("provincia", DENS_P)):
+        for u, ni, dm, de, do, dob, dca in cx.execute(
+            "SELECT ubigeo,n_ipress,d_medicos,d_enfermeras,d_odontologos,d_obstetras,d_camas "
+            "FROM densidad_salud WHERE nivel=?", (lv,)):
+            dic[u] = dict(nip=ni, dmed=dm, denf=de, dodo=do, dobs=dob, dcam=dca)
+except Exception:
+    pass
 con.close()
 
 def dep_pob(nombdep):
@@ -404,6 +438,14 @@ def geom_path(gm):
             d += "Z"
     return d, bx
 
+# DD (2 digitos) -> codigo de departamento del geojson (norm del NOMBDEP)
+DD2DEP = {"01":"amazonas","02":"ancash","03":"apurimac","04":"arequipa","05":"ayacucho",
+ "06":"cajamarca","07":"callao","08":"cusco","09":"huancavelica","10":"huanuco","11":"ica",
+ "12":"junin","13":"la libertad","14":"lambayeque","15":"lima","16":"loreto","17":"madre de dios",
+ "18":"moquegua","19":"pasco","20":"piura","21":"puno","22":"san martin","23":"tacna",
+ "24":"tumbes","25":"ucayali"}
+DEP2DD = {v: k for k, v in DD2DEP.items()}
+
 # departamentos
 deps = []
 for f in gdep["features"]:
@@ -415,16 +457,12 @@ for f in gdep["features"]:
                       p.get("rur",0), ha/100.0 if ha else 0, sg,
                       ptot=combina(PTOT_D,nombdep), pomit=combina(POMI_D,nombdep),
                       viv=combina(VIV_D,nombdep), hog=combina(HOG_D,nombdep))
+    sd = DENS_D.get(DEP2DD.get(norm(nombdep)), {})
     ind.update({"dep": nombdep.title(), "d": d, "cod": norm(nombdep),
+                "nip": sd.get("nip",0), "dmed": sd.get("dmed",0), "denf": sd.get("denf",0),
+                "dodo": sd.get("dodo",0), "dobs": sd.get("dobs",0), "dcam": sd.get("dcam",0),
                 "vb": [round(bx[0]-6,1), round(bx[1]-6,1), round(bx[2]-bx[0]+12,1), round(bx[3]-bx[1]+12,1)]})
     deps.append(ind)
-
-# DD (2 digitos) -> codigo de departamento del geojson (norm del NOMBDEP)
-DD2DEP = {"01":"amazonas","02":"ancash","03":"apurimac","04":"arequipa","05":"ayacucho",
- "06":"cajamarca","07":"callao","08":"cusco","09":"huancavelica","10":"huanuco","11":"ica",
- "12":"junin","13":"la libertad","14":"lambayeque","15":"lima","16":"loreto","17":"madre de dios",
- "18":"moquegua","19":"pasco","20":"piura","21":"puno","22":"san martin","23":"tacna",
- "24":"tumbes","25":"ucayali"}
 
 # provincias (departamento derivado del prefijo del codigo, el geojson provincial no trae NOMBDEP)
 provs = []
@@ -439,8 +477,11 @@ for f in gprov["features"]:
                       ha/100.0 if ha else 0, sg,
                       ptot=PTOT_P.get(ddpp,0) or 0, pomit=POMI_P.get(ddpp,0) or 0,
                       viv=VIV_P.get(ddpp,0) or 0, hog=HOG_P.get(ddpp,0) or 0)
+    sd = DENS_P.get(ddpp, {})
     ind.update({"dep": depcod.title(), "prov": nombprov.title(), "d": d,
-                "depcod": depcod, "ubigeo": ddpp})
+                "depcod": depcod, "ubigeo": ddpp,
+                "nip": sd.get("nip",0), "dmed": sd.get("dmed",0), "denf": sd.get("denf",0),
+                "dodo": sd.get("dodo",0), "dobs": sd.get("dobs",0), "dcam": sd.get("dcam",0)})
     provs.append(ind)
 
 def fmt(n): return f"{int(n):,}".replace(",", " ")
