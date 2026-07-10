@@ -67,10 +67,14 @@ pd.read_sql("SELECT ubigeo_nombre, valor FROM v_dato_geo "
 Vistas listas: **`v_dato`** (dato + tema + cuadro + textos) y **`v_dato_geo`** (con
 geografía resuelta por nombre a nivel nacional/departamento/provincia).
 
-## Enlazar con otros proyectos
-Cualquier proyecto (SISOL, IPRESS, turismo, etc.) que tenga un nombre de departamento o
-provincia puede unirse por `dim_ubigeo.nombre_norm`. Para enlazar a **nivel distrito** se
-recomienda incorporar el **código UBIGEO oficial** (ver Pendientes).
+## Enlazar con otros proyectos — indexado por UBIGEO
+Cada unidad de `dim_ubigeo` tiene su **código UBIGEO oficial del INEI** (`ubigeo_inei`, 6
+dígitos DDPPDD), resuelto por emparejamiento jerárquico contra `ref/ubigeo_inei.csv`.
+Cobertura **2103/2113 (99,5 %)**: 26 departamentos, 194 provincias y 1 882 distritos —
+sin códigos duplicados. Los 10 pendientes son **distritos creados después del catálogo 2020**
+(p. ej. Alto Trujillo); su plantilla está en `ref/ubigeo_pendientes.csv` y se completan en
+`ref/ubigeo_overrides.csv`. Así cualquier sistema (SISOL, IPRESS, turismo, salud) enlaza con
+el censo por `ubigeo_inei` a nivel departamento/provincia/distrito.
 
 ## Reproducir
 ```bash
@@ -79,7 +83,8 @@ python ../../../gemses-grafos/grafos_censo2025/build_grafo_censo.py   # regenera
 ```
 
 ## Pendientes / mejoras
-1. **Código UBIGEO oficial** (RENIEC/INEI) en `dim_ubigeo` → JOIN inequívoco a nivel distrito
-   (hoy el enlace por nombre es exacto solo hasta provincia; hay distritos homónimos).
+1. ✅ **Código UBIGEO oficial** en `dim_ubigeo` (99,5 %); completar los 10 distritos nuevos en
+   `ref/ubigeo_overrides.csv`.
 2. Incorporar Tabulados de **Vivienda**, **Hogar** y **Comunidades Indígenas** (mismo método).
-3. Vistas curadas por dimensión (sexo/edad/área) para los cuadros demográficos clave.
+3. Drill-down del mapa a provincia/distrito usando `ubigeo_inei`.
+4. Vistas curadas por dimensión (sexo/edad/área) para los cuadros demográficos clave.

@@ -55,3 +55,13 @@ LIMIT 30;
 SELECT t.nombre AS tema, COUNT(*) AS datos
 FROM dato d JOIN cuadro c ON c.cuadro_id=d.cuadro_id JOIN tema t ON t.cod_tema=c.cod_tema
 GROUP BY t.nombre ORDER BY datos DESC;
+
+-- 10) INDEXADO POR UBIGEO: población por código UBIGEO oficial (enlace con otros sistemas)
+SELECT u.ubigeo_inei, u.nombre, u.nivel, dg.valor AS poblacion
+FROM v_dato_geo dg
+JOIN dim_ubigeo u ON u.ubigeo_id = dg.ubigeo_id
+WHERE dg.hoja='INDDEM01' AND dg.columna='Total' AND u.nivel='departamento'
+ORDER BY u.ubigeo_inei;
+
+-- 11) Buscar cualquier unidad por su código UBIGEO (ej. distrito de Miraflores 150122)
+SELECT ubigeo_inei, nombre, nivel FROM dim_ubigeo WHERE ubigeo_inei LIKE '1501%' LIMIT 15;

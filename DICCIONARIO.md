@@ -8,13 +8,18 @@ Fuente: INEI, Censos Nacionales 2025 - Tabulados de Poblacion. Generado por etl_
 |---|---|---|
 | tema | 8 temas de poblacion | 8 |
 | cuadro | catalogo de cuadros | 63 |
-| dim_ubigeo | jerarquia geografica (Peru>Dep>Prov>Dist) | 2,097 |
+| dim_ubigeo | jerarquia geografica + codigo UBIGEO oficial | 2,113 |
 | dim_fila | etiquetas de fila (unicas) | 2,257 |
-| dim_columna | rutas de columna (cabeceras) | 142 |
+| dim_columna | rutas de columna (cabeceras) | 163 |
 | dato | HECHOS: un valor por fila | 648,198 |
 | nota | notas de presentacion | 8 |
 
-**Vistas:** v_dato (dato + tema + cuadro + textos), v_dato_geo (v_dato + geografia resuelta por nombre).
+**dim_ubigeo.ubigeo_inei**: codigo UBIGEO oficial de 6 digitos (DDPPDD). Resuelto por
+emparejamiento jerarquico contra ref/ubigeo_inei.csv. Permite JOIN inequivoco con cualquier
+sistema por codigo. 2103/2113 nodos resueltos; los pendientes (distritos nuevos post-2020)
+estan en ref/ubigeo_pendientes.csv y se completan en ref/ubigeo_overrides.csv.
+
+**Vistas:** v_dato (dato + tema + cuadro + textos), v_dato_geo (v_dato + geografia + ubigeo_inei).
 
 ## Temas y cuadros
 
@@ -98,11 +103,9 @@ Fuente: INEI, Censos Nacionales 2025 - Tabulados de Poblacion. Generado por etl_
 - **PET9** (13,608 datos): CUADRO N° 9: POBLACIÓN CENSADA EN EDAD DE TRABAJAR, POR ESTADO CIVIL O CONYUGAL, SEGÚN DEPARTAMENTO, PROVINCIA
 
 ## Notas de uso
-- **Columnas con sufijo `#2`, `#3`**: cuando un cuadro repite el mismo texto de cabecera en
-  varias columnas (típico en bandas Total/Urbana/Rural mal rotuladas en el Excel), se añade
-  un sufijo posicional para distinguirlas. Ej. en `INDDEM01`: `Total` = población total,
-  `Total #2` = urbana, `Total #3` = rural. Ningún dato se pierde.
-- **`v_dato_geo`** resuelve geografía uniendo por nombre normalizado (sin tildes) a nivel
-  **nacional / departamento / provincia** (nombres únicos). A nivel **distrito** hay
-  homónimos; usar la jerarquía `dim_ubigeo` (padre_id) o el código UBIGEO oficial.
-- **Control de integridad**: `PERÚ / Total` en `INDDEM01` = 32.706.028 (cifra oficial 2025).
+- **Columnas con sufijo #2, #3**: cuando un cuadro repite la misma cabecera (bandas
+  Total/Urbana/Rural mal rotuladas), se sufija para distinguirlas. Ej. INDDEM01: Total=total,
+  Total #2=urbana, Total #3=rural. Ningun dato se pierde.
+- **Enlace por UBIGEO**: usar dim_ubigeo.ubigeo_inei (codigo oficial) para JOIN a nivel
+  departamento/provincia/distrito. El enlace por nombre (v_dato_geo) es exacto hasta provincia.
+- **Control**: PERU/Total en INDDEM01 = 32.706.028 (cifra oficial 2025).

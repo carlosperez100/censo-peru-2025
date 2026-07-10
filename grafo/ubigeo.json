@@ -2215,19 +2215,26 @@
     {
       "id": "0303d04",
       "label": "distrito",
-      "nombre": "Oropesa",
+      "nombre": "Juan Espinoza Medrano",
       "nivel": "distrito",
       "cod_dep": "03"
     },
     {
       "id": "0303d05",
       "label": "distrito",
-      "nombre": "Pachaconas",
+      "nombre": "Oropesa",
       "nivel": "distrito",
       "cod_dep": "03"
     },
     {
       "id": "0303d06",
+      "label": "distrito",
+      "nombre": "Pachaconas",
+      "nivel": "distrito",
+      "cod_dep": "03"
+    },
+    {
+      "id": "0303d07",
       "label": "distrito",
       "nombre": "Sabaino",
       "nivel": "distrito",
@@ -2677,138 +2684,145 @@
     {
       "id": "0401d09",
       "label": "distrito",
-      "nombre": "Miraflores",
+      "nombre": "Mariano Melgar",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d10",
       "label": "distrito",
-      "nombre": "Mollebaya",
+      "nombre": "Miraflores",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d11",
       "label": "distrito",
-      "nombre": "Paucarpata",
+      "nombre": "Mollebaya",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d12",
       "label": "distrito",
-      "nombre": "Pocsi",
+      "nombre": "Paucarpata",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d13",
       "label": "distrito",
-      "nombre": "Polobaya",
+      "nombre": "Pocsi",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d14",
       "label": "distrito",
-      "nombre": "Quequeña",
+      "nombre": "Polobaya",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d15",
       "label": "distrito",
-      "nombre": "Sabandía",
+      "nombre": "Quequeña",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d16",
       "label": "distrito",
-      "nombre": "Sachaca",
+      "nombre": "Sabandía",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d17",
       "label": "distrito",
-      "nombre": "San Juan De Siguas",
+      "nombre": "Sachaca",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d18",
       "label": "distrito",
-      "nombre": "San Juan De Tarucani",
+      "nombre": "San Juan De Siguas",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d19",
       "label": "distrito",
-      "nombre": "Santa Isabel De Siguas",
+      "nombre": "San Juan De Tarucani",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d20",
       "label": "distrito",
-      "nombre": "Santa Rita De Siguas",
+      "nombre": "Santa Isabel De Siguas",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d21",
       "label": "distrito",
-      "nombre": "Socabaya",
+      "nombre": "Santa Rita De Siguas",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d22",
       "label": "distrito",
-      "nombre": "Tiabaya",
+      "nombre": "Socabaya",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d23",
       "label": "distrito",
-      "nombre": "Uchumayo",
+      "nombre": "Tiabaya",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d24",
       "label": "distrito",
-      "nombre": "Vítor",
+      "nombre": "Uchumayo",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d25",
       "label": "distrito",
-      "nombre": "Yanahuara",
+      "nombre": "Vítor",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d26",
       "label": "distrito",
-      "nombre": "Yarabamba",
+      "nombre": "Yanahuara",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d27",
       "label": "distrito",
-      "nombre": "Yura",
+      "nombre": "Yarabamba",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0401d28",
+      "label": "distrito",
+      "nombre": "Yura",
+      "nivel": "distrito",
+      "cod_dep": "04"
+    },
+    {
+      "id": "0401d29",
       "label": "distrito",
       "nombre": "José Luis Bustamante Y Rivero",
       "nivel": "distrito",
@@ -2838,33 +2852,40 @@
     {
       "id": "0402d03",
       "label": "distrito",
-      "nombre": "Mariscal Cáceres",
+      "nombre": "Mariano Nicolás Valcárcel",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0402d04",
       "label": "distrito",
-      "nombre": "Nicolás De Piérola",
+      "nombre": "Mariscal Cáceres",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0402d05",
       "label": "distrito",
-      "nombre": "Ocoña",
+      "nombre": "Nicolás De Piérola",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0402d06",
       "label": "distrito",
-      "nombre": "Quilca",
+      "nombre": "Ocoña",
       "nivel": "distrito",
       "cod_dep": "04"
     },
     {
       "id": "0402d07",
+      "label": "distrito",
+      "nombre": "Quilca",
+      "nivel": "distrito",
+      "cod_dep": "04"
+    },
+    {
+      "id": "0402d08",
       "label": "distrito",
       "nombre": "Samuel Pastor",
       "nivel": "distrito",
@@ -4427,26 +4448,40 @@
     {
       "id": "0601d07",
       "label": "distrito",
-      "nombre": "Magdalena",
+      "nombre": "Llacanora",
       "nivel": "distrito",
       "cod_dep": "06"
     },
     {
       "id": "0601d08",
       "label": "distrito",
-      "nombre": "Matara",
+      "nombre": "Los Baños Del Inca",
       "nivel": "distrito",
       "cod_dep": "06"
     },
     {
       "id": "0601d09",
       "label": "distrito",
-      "nombre": "Namora",
+      "nombre": "Magdalena",
       "nivel": "distrito",
       "cod_dep": "06"
     },
     {
       "id": "0601d10",
+      "label": "distrito",
+      "nombre": "Matara",
+      "nivel": "distrito",
+      "cod_dep": "06"
+    },
+    {
+      "id": "0601d11",
+      "label": "distrito",
+      "nombre": "Namora",
+      "nivel": "distrito",
+      "cod_dep": "06"
+    },
+    {
+      "id": "0601d12",
       "label": "distrito",
       "nombre": "San Juan",
       "nivel": "distrito",
@@ -4887,6 +4922,13 @@
       "cod_dep": "06"
     },
     {
+      "id": "0606d15",
+      "label": "distrito",
+      "nombre": "Toribio Casanova",
+      "nivel": "distrito",
+      "cod_dep": "06"
+    },
+    {
       "id": "0607",
       "label": "provincia",
       "nombre": "Hualgayoc",
@@ -5281,47 +5323,54 @@
     {
       "id": "0613d04",
       "label": "distrito",
-      "nombre": "La Esperanza",
+      "nombre": "Chancaybaños",
       "nivel": "distrito",
       "cod_dep": "06"
     },
     {
       "id": "0613d05",
       "label": "distrito",
-      "nombre": "Ninabamba",
+      "nombre": "La Esperanza",
       "nivel": "distrito",
       "cod_dep": "06"
     },
     {
       "id": "0613d06",
       "label": "distrito",
-      "nombre": "Pulán",
+      "nombre": "Ninabamba",
       "nivel": "distrito",
       "cod_dep": "06"
     },
     {
       "id": "0613d07",
       "label": "distrito",
-      "nombre": "Saucepampa",
+      "nombre": "Pulán",
       "nivel": "distrito",
       "cod_dep": "06"
     },
     {
       "id": "0613d08",
       "label": "distrito",
-      "nombre": "Sexi",
+      "nombre": "Saucepampa",
       "nivel": "distrito",
       "cod_dep": "06"
     },
     {
       "id": "0613d09",
       "label": "distrito",
-      "nombre": "Uticyacu",
+      "nombre": "Sexi",
       "nivel": "distrito",
       "cod_dep": "06"
     },
     {
       "id": "0613d10",
+      "label": "distrito",
+      "nombre": "Uticyacu",
+      "nivel": "distrito",
+      "cod_dep": "06"
+    },
+    {
+      "id": "0613d11",
       "label": "distrito",
       "nombre": "Yauyucán",
       "nivel": "distrito",
@@ -6065,26 +6114,33 @@
     {
       "id": "0810d05",
       "label": "distrito",
-      "nombre": "Omacha",
+      "nombre": "Huanoquite",
       "nivel": "distrito",
       "cod_dep": "08"
     },
     {
       "id": "0810d06",
       "label": "distrito",
-      "nombre": "Paccaritambo",
+      "nombre": "Omacha",
       "nivel": "distrito",
       "cod_dep": "08"
     },
     {
       "id": "0810d07",
       "label": "distrito",
-      "nombre": "Pillpinto",
+      "nombre": "Paccaritambo",
       "nivel": "distrito",
       "cod_dep": "08"
     },
     {
       "id": "0810d08",
+      "label": "distrito",
+      "nombre": "Pillpinto",
+      "nivel": "distrito",
+      "cod_dep": "08"
+    },
+    {
+      "id": "0810d09",
       "label": "distrito",
       "nombre": "Yaurisque",
       "nivel": "distrito",
@@ -7458,250 +7514,271 @@
     {
       "id": "1006d06",
       "label": "distrito",
-      "nombre": "Pucayacu",
+      "nombre": "Mariano Damaso Beraun",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1006d07",
       "label": "distrito",
-      "nombre": "Castillo Grande",
+      "nombre": "Pucayacu",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1006d08",
       "label": "distrito",
-      "nombre": "Pueblo Nuevo",
+      "nombre": "Castillo Grande",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1006d09",
       "label": "distrito",
-      "nombre": "Santo Domingo De Anda",
+      "nombre": "Pueblo Nuevo",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1006d10",
       "label": "distrito",
-      "nombre": "Huacrachuco",
-      "nivel": "distrito",
-      "cod_dep": "10"
-    },
-    {
-      "id": "1006d11",
-      "label": "distrito",
-      "nombre": "Cholón",
-      "nivel": "distrito",
-      "cod_dep": "10"
-    },
-    {
-      "id": "1006d12",
-      "label": "distrito",
-      "nombre": "San Buenaventura",
-      "nivel": "distrito",
-      "cod_dep": "10"
-    },
-    {
-      "id": "1006d13",
-      "label": "distrito",
-      "nombre": "La Morada",
-      "nivel": "distrito",
-      "cod_dep": "10"
-    },
-    {
-      "id": "1006d14",
-      "label": "distrito",
-      "nombre": "Santa Rosa De Alto Yanajanca",
+      "nombre": "Santo Domingo De Anda",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1007",
       "label": "provincia",
-      "nombre": "Pachitea",
+      "nombre": "Marañón",
       "nivel": "provincia",
       "cod_dep": "10"
     },
     {
       "id": "1007d01",
       "label": "distrito",
-      "nombre": "Panao",
+      "nombre": "Huacrachuco",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1007d02",
       "label": "distrito",
-      "nombre": "Chaglla",
+      "nombre": "Cholón",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1007d03",
       "label": "distrito",
-      "nombre": "Molino",
+      "nombre": "San Buenaventura",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1007d04",
       "label": "distrito",
-      "nombre": "Umari",
+      "nombre": "La Morada",
+      "nivel": "distrito",
+      "cod_dep": "10"
+    },
+    {
+      "id": "1007d05",
+      "label": "distrito",
+      "nombre": "Santa Rosa De Alto Yanajanca",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1008",
       "label": "provincia",
-      "nombre": "Puerto Inca",
+      "nombre": "Pachitea",
       "nivel": "provincia",
       "cod_dep": "10"
     },
     {
       "id": "1008d01",
       "label": "distrito",
-      "nombre": "Puerto Inca",
+      "nombre": "Panao",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1008d02",
       "label": "distrito",
-      "nombre": "Codo Del Pozuzo",
+      "nombre": "Chaglla",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1008d03",
       "label": "distrito",
-      "nombre": "Honoria",
+      "nombre": "Molino",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1008d04",
       "label": "distrito",
-      "nombre": "Tournavista",
-      "nivel": "distrito",
-      "cod_dep": "10"
-    },
-    {
-      "id": "1008d05",
-      "label": "distrito",
-      "nombre": "Yuyapichis",
+      "nombre": "Umari",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1009",
       "label": "provincia",
-      "nombre": "Lauricocha",
+      "nombre": "Puerto Inca",
       "nivel": "provincia",
       "cod_dep": "10"
     },
     {
       "id": "1009d01",
       "label": "distrito",
-      "nombre": "Jesús",
+      "nombre": "Puerto Inca",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1009d02",
       "label": "distrito",
-      "nombre": "Jivia",
+      "nombre": "Codo Del Pozuzo",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1009d03",
       "label": "distrito",
-      "nombre": "Queropalca",
+      "nombre": "Honoria",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1009d04",
       "label": "distrito",
-      "nombre": "Rondos",
+      "nombre": "Tournavista",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1009d05",
       "label": "distrito",
-      "nombre": "San Francisco De Asís",
-      "nivel": "distrito",
-      "cod_dep": "10"
-    },
-    {
-      "id": "1009d06",
-      "label": "distrito",
-      "nombre": "San Miguel De Cauri",
+      "nombre": "Yuyapichis",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1010",
       "label": "provincia",
-      "nombre": "Yarowilca",
+      "nombre": "Lauricocha",
       "nivel": "provincia",
       "cod_dep": "10"
     },
     {
       "id": "1010d01",
       "label": "distrito",
-      "nombre": "Chavinillo",
+      "nombre": "Jesús",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1010d02",
       "label": "distrito",
-      "nombre": "Cáhuac",
+      "nombre": "Baños",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1010d03",
       "label": "distrito",
-      "nombre": "Chacabamba",
+      "nombre": "Jivia",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1010d04",
       "label": "distrito",
-      "nombre": "Aparicio Pomares",
+      "nombre": "Queropalca",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1010d05",
       "label": "distrito",
-      "nombre": "Jacas Chico",
+      "nombre": "Rondos",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1010d06",
       "label": "distrito",
-      "nombre": "Obas",
+      "nombre": "San Francisco De Asís",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
       "id": "1010d07",
       "label": "distrito",
+      "nombre": "San Miguel De Cauri",
+      "nivel": "distrito",
+      "cod_dep": "10"
+    },
+    {
+      "id": "1011",
+      "label": "provincia",
+      "nombre": "Yarowilca",
+      "nivel": "provincia",
+      "cod_dep": "10"
+    },
+    {
+      "id": "1011d01",
+      "label": "distrito",
+      "nombre": "Chavinillo",
+      "nivel": "distrito",
+      "cod_dep": "10"
+    },
+    {
+      "id": "1011d02",
+      "label": "distrito",
+      "nombre": "Cáhuac",
+      "nivel": "distrito",
+      "cod_dep": "10"
+    },
+    {
+      "id": "1011d03",
+      "label": "distrito",
+      "nombre": "Chacabamba",
+      "nivel": "distrito",
+      "cod_dep": "10"
+    },
+    {
+      "id": "1011d04",
+      "label": "distrito",
+      "nombre": "Aparicio Pomares",
+      "nivel": "distrito",
+      "cod_dep": "10"
+    },
+    {
+      "id": "1011d05",
+      "label": "distrito",
+      "nombre": "Jacas Chico",
+      "nivel": "distrito",
+      "cod_dep": "10"
+    },
+    {
+      "id": "1011d06",
+      "label": "distrito",
+      "nombre": "Obas",
+      "nivel": "distrito",
+      "cod_dep": "10"
+    },
+    {
+      "id": "1011d07",
+      "label": "distrito",
       "nombre": "Pampamarca",
       "nivel": "distrito",
       "cod_dep": "10"
     },
     {
-      "id": "1010d08",
+      "id": "1011d08",
       "label": "distrito",
       "nombre": "Choras",
       "nivel": "distrito",
@@ -8004,40 +8081,47 @@
     {
       "id": "1105d02",
       "label": "distrito",
-      "nombre": "Humay",
+      "nombre": "Huancano",
       "nivel": "distrito",
       "cod_dep": "11"
     },
     {
       "id": "1105d03",
       "label": "distrito",
-      "nombre": "Independencia",
+      "nombre": "Humay",
       "nivel": "distrito",
       "cod_dep": "11"
     },
     {
       "id": "1105d04",
       "label": "distrito",
-      "nombre": "Paracas",
+      "nombre": "Independencia",
       "nivel": "distrito",
       "cod_dep": "11"
     },
     {
       "id": "1105d05",
       "label": "distrito",
-      "nombre": "San Andrés",
+      "nombre": "Paracas",
       "nivel": "distrito",
       "cod_dep": "11"
     },
     {
       "id": "1105d06",
       "label": "distrito",
-      "nombre": "San Clemente",
+      "nombre": "San Andrés",
       "nivel": "distrito",
       "cod_dep": "11"
     },
     {
       "id": "1105d07",
+      "label": "distrito",
+      "nombre": "San Clemente",
+      "nivel": "distrito",
+      "cod_dep": "11"
+    },
+    {
+      "id": "1105d08",
       "label": "distrito",
       "nombre": "Túpac Amaru Inca",
       "nivel": "distrito",
@@ -8221,26 +8305,33 @@
     {
       "id": "1201d24",
       "label": "distrito",
-      "nombre": "Sapallanga",
+      "nombre": "Saño",
       "nivel": "distrito",
       "cod_dep": "12"
     },
     {
       "id": "1201d25",
       "label": "distrito",
-      "nombre": "Sicaya",
+      "nombre": "Sapallanga",
       "nivel": "distrito",
       "cod_dep": "12"
     },
     {
       "id": "1201d26",
       "label": "distrito",
-      "nombre": "Santo Domingo De Acobamba",
+      "nombre": "Sicaya",
       "nivel": "distrito",
       "cod_dep": "12"
     },
     {
       "id": "1201d27",
+      "label": "distrito",
+      "nombre": "Santo Domingo De Acobamba",
+      "nivel": "distrito",
+      "cod_dep": "12"
+    },
+    {
+      "id": "1201d28",
       "label": "distrito",
       "nombre": "Viques",
       "nivel": "distrito",
@@ -11579,77 +11670,84 @@
       "cod_dep": "16"
     },
     {
-      "id": "1606d07",
-      "label": "distrito",
-      "nombre": "Barranca",
-      "nivel": "distrito",
-      "cod_dep": "16"
-    },
-    {
-      "id": "1606d08",
-      "label": "distrito",
-      "nombre": "Cahuapanas",
-      "nivel": "distrito",
-      "cod_dep": "16"
-    },
-    {
-      "id": "1606d09",
-      "label": "distrito",
-      "nombre": "Manseriche",
-      "nivel": "distrito",
-      "cod_dep": "16"
-    },
-    {
-      "id": "1606d10",
-      "label": "distrito",
-      "nombre": "Morona",
-      "nivel": "distrito",
-      "cod_dep": "16"
-    },
-    {
-      "id": "1606d11",
-      "label": "distrito",
-      "nombre": "Pastaza",
-      "nivel": "distrito",
-      "cod_dep": "16"
-    },
-    {
-      "id": "1606d12",
-      "label": "distrito",
-      "nombre": "Andoas",
-      "nivel": "distrito",
-      "cod_dep": "16"
-    },
-    {
       "id": "1607",
       "label": "provincia",
-      "nombre": "Putumayo",
+      "nombre": "Datem Del Marañón",
       "nivel": "provincia",
       "cod_dep": "16"
     },
     {
       "id": "1607d01",
       "label": "distrito",
-      "nombre": "Putumayo",
+      "nombre": "Barranca",
       "nivel": "distrito",
       "cod_dep": "16"
     },
     {
       "id": "1607d02",
       "label": "distrito",
-      "nombre": "Rosa Panduro",
+      "nombre": "Cahuapanas",
       "nivel": "distrito",
       "cod_dep": "16"
     },
     {
       "id": "1607d03",
       "label": "distrito",
-      "nombre": "Teniente Manuel Clavero",
+      "nombre": "Manseriche",
       "nivel": "distrito",
       "cod_dep": "16"
     },
     {
       "id": "1607d04",
+      "label": "distrito",
+      "nombre": "Morona",
+      "nivel": "distrito",
+      "cod_dep": "16"
+    },
+    {
+      "id": "1607d05",
+      "label": "distrito",
+      "nombre": "Pastaza",
+      "nivel": "distrito",
+      "cod_dep": "16"
+    },
+    {
+      "id": "1607d06",
+      "label": "distrito",
+      "nombre": "Andoas",
+      "nivel": "distrito",
+      "cod_dep": "16"
+    },
+    {
+      "id": "1608",
+      "label": "provincia",
+      "nombre": "Putumayo",
+      "nivel": "provincia",
+      "cod_dep": "16"
+    },
+    {
+      "id": "1608d01",
+      "label": "distrito",
+      "nombre": "Putumayo",
+      "nivel": "distrito",
+      "cod_dep": "16"
+    },
+    {
+      "id": "1608d02",
+      "label": "distrito",
+      "nombre": "Rosa Panduro",
+      "nivel": "distrito",
+      "cod_dep": "16"
+    },
+    {
+      "id": "1608d03",
+      "label": "distrito",
+      "nombre": "Teniente Manuel Clavero",
+      "nivel": "distrito",
+      "cod_dep": "16"
+    },
+    {
+      "id": "1608d04",
       "label": "distrito",
       "nombre": "Yaguas",
       "nivel": "distrito",
@@ -12623,6 +12721,13 @@
     },
     {
       "id": "2007d05",
+      "label": "distrito",
+      "nombre": "Los Órganos",
+      "nivel": "distrito",
+      "cod_dep": "20"
+    },
+    {
+      "id": "2007d06",
       "label": "distrito",
       "nombre": "Máncora",
       "nivel": "distrito",
@@ -14477,6 +14582,13 @@
       "cod_dep": "24"
     },
     {
+      "id": "2402d03",
+      "label": "distrito",
+      "nombre": "Canoas De Punta Sal",
+      "nivel": "distrito",
+      "cod_dep": "24"
+    },
+    {
       "id": "2403",
       "label": "provincia",
       "nombre": "Zarumilla",
@@ -16272,6 +16384,11 @@
       "tipo": "CONTIENE"
     },
     {
+      "origen": "0303",
+      "destino": "0303d07",
+      "tipo": "CONTIENE"
+    },
+    {
       "origen": "0300",
       "destino": "0304",
       "tipo": "CONTIENE"
@@ -16687,6 +16804,11 @@
       "tipo": "CONTIENE"
     },
     {
+      "origen": "0401",
+      "destino": "0401d29",
+      "tipo": "CONTIENE"
+    },
+    {
       "origen": "0400",
       "destino": "0402",
       "tipo": "CONTIENE"
@@ -16724,6 +16846,11 @@
     {
       "origen": "0402",
       "destino": "0402d07",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "0402",
+      "destino": "0402d08",
       "tipo": "CONTIENE"
     },
     {
@@ -17857,6 +17984,16 @@
       "tipo": "CONTIENE"
     },
     {
+      "origen": "0601",
+      "destino": "0601d11",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "0601",
+      "destino": "0601d12",
+      "tipo": "CONTIENE"
+    },
+    {
       "origen": "0600",
       "destino": "0602",
       "tipo": "CONTIENE"
@@ -18164,6 +18301,11 @@
     {
       "origen": "0606",
       "destino": "0606d14",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "0606",
+      "destino": "0606d15",
       "tipo": "CONTIENE"
     },
     {
@@ -18479,6 +18621,11 @@
     {
       "origen": "0613",
       "destino": "0613d10",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "0613",
+      "destino": "0613d11",
       "tipo": "CONTIENE"
     },
     {
@@ -19024,6 +19171,11 @@
     {
       "origen": "0810",
       "destino": "0810d08",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "0810",
+      "destino": "0810d09",
       "tipo": "CONTIENE"
     },
     {
@@ -20027,26 +20179,6 @@
       "tipo": "CONTIENE"
     },
     {
-      "origen": "1006",
-      "destino": "1006d11",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1006",
-      "destino": "1006d12",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1006",
-      "destino": "1006d13",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1006",
-      "destino": "1006d14",
-      "tipo": "CONTIENE"
-    },
-    {
       "origen": "1000",
       "destino": "1007",
       "tipo": "CONTIENE"
@@ -20072,6 +20204,11 @@
       "tipo": "CONTIENE"
     },
     {
+      "origen": "1007",
+      "destino": "1007d05",
+      "tipo": "CONTIENE"
+    },
+    {
       "origen": "1000",
       "destino": "1008",
       "tipo": "CONTIENE"
@@ -20094,11 +20231,6 @@
     {
       "origen": "1008",
       "destino": "1008d04",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1008",
-      "destino": "1008d05",
       "tipo": "CONTIENE"
     },
     {
@@ -20129,11 +20261,6 @@
     {
       "origen": "1009",
       "destino": "1009d05",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1009",
-      "destino": "1009d06",
       "tipo": "CONTIENE"
     },
     {
@@ -20177,8 +20304,48 @@
       "tipo": "CONTIENE"
     },
     {
-      "origen": "1010",
-      "destino": "1010d08",
+      "origen": "1000",
+      "destino": "1011",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1011",
+      "destino": "1011d01",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1011",
+      "destino": "1011d02",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1011",
+      "destino": "1011d03",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1011",
+      "destino": "1011d04",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1011",
+      "destino": "1011d05",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1011",
+      "destino": "1011d06",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1011",
+      "destino": "1011d07",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1011",
+      "destino": "1011d08",
       "tipo": "CONTIENE"
     },
     {
@@ -20422,6 +20589,11 @@
       "tipo": "CONTIENE"
     },
     {
+      "origen": "1105",
+      "destino": "1105d08",
+      "tipo": "CONTIENE"
+    },
+    {
       "origen": "0000",
       "destino": "1200",
       "tipo": "CONTIENE"
@@ -20564,6 +20736,11 @@
     {
       "origen": "1201",
       "destino": "1201d27",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1201",
+      "destino": "1201d28",
       "tipo": "CONTIENE"
     },
     {
@@ -22947,36 +23124,6 @@
       "tipo": "CONTIENE"
     },
     {
-      "origen": "1606",
-      "destino": "1606d07",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1606",
-      "destino": "1606d08",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1606",
-      "destino": "1606d09",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1606",
-      "destino": "1606d10",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1606",
-      "destino": "1606d11",
-      "tipo": "CONTIENE"
-    },
-    {
-      "origen": "1606",
-      "destino": "1606d12",
-      "tipo": "CONTIENE"
-    },
-    {
       "origen": "1600",
       "destino": "1607",
       "tipo": "CONTIENE"
@@ -22999,6 +23146,41 @@
     {
       "origen": "1607",
       "destino": "1607d04",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1607",
+      "destino": "1607d05",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1607",
+      "destino": "1607d06",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1600",
+      "destino": "1608",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1608",
+      "destino": "1608d01",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1608",
+      "destino": "1608d02",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1608",
+      "destino": "1608d03",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "1608",
+      "destino": "1608d04",
       "tipo": "CONTIENE"
     },
     {
@@ -23694,6 +23876,11 @@
     {
       "origen": "2007",
       "destino": "2007d05",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "2007",
+      "destino": "2007d06",
       "tipo": "CONTIENE"
     },
     {
@@ -25014,6 +25201,11 @@
     {
       "origen": "2402",
       "destino": "2402d02",
+      "tipo": "CONTIENE"
+    },
+    {
+      "origen": "2402",
+      "destino": "2402d03",
       "tipo": "CONTIENE"
     },
     {

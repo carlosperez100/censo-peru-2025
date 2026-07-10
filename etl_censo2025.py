@@ -7,11 +7,12 @@ desanidadas a formato largo) + dimension geografica que enlaza por nombre normal
 Entrada : ./raw/*.xlsx  (8 temas descargados del portal INEI)
 Salida  : ./censo2025.db (SQLite)  +  ./grafo/ubigeo.json  +  ./DICCIONARIO.md
 """
-import openpyxl, sqlite3, glob, os, re, json, unicodedata
+import openpyxl, sqlite3, glob, os, re, json, csv, unicodedata
 
 RAW = os.path.join(os.path.dirname(__file__), "raw")
 DB  = os.path.join(os.path.dirname(__file__), "censo2025.db")
 GRAFO = os.path.join(os.path.dirname(__file__), "grafo")
+UBIGEO_CSV = os.path.join(os.path.dirname(__file__), "ref", "ubigeo_inei.csv")
 os.makedirs(GRAFO, exist_ok=True)
 
 TEMAS = {  # archivo -> (codigo_tema, nombre_tema)
@@ -120,9 +121,10 @@ def build_ubigeo(archivo_flagship):
     ws = wb["INDDEM01"]
     grid, maxr, maxc = build_grid(ws)
     _, _, _, filas = parse_sheet(grid, maxr, maxc)
-    # grupos de edad contienen "ano"/"anos" o empiezan con "menores"; los lugares no.
+    # grupos de edad: "menores de..." o contienen "año/años" como palabra.
+    # OJO: usar limite de palabra (\bano\b), si no "Marañon"->"maranon" contiene "ano".
     def es_edad(n):
-        return ("ano" in n) or n.startswith("menores")
+        return n.startswith("menores") or bool(re.search(r"\banos?\b", n))
     # geografia = etiquetas que NO son grupos de edad ni notas/fuentes al pie
     def es_ruido(n):
         return n.startswith("nota") or n.startswith("fuente") or n.startswith("1/") or len(n) > 55
@@ -163,6 +165,69 @@ def build_ubigeo(archivo_flagship):
     wb.close()
     return ubigeos
 
+# ---------------------------------------------------------------- indexado UBIGEO oficial
+ALIAS_GEO = {"nasca": "nazca", "kimbiri": "quimbiri", "raimondi": "raymondi"}  # censo 2025 -> catalogo
+
+def g(n):
+    """Normalizacion geografica extra: quita parentesis y aplica alias de grafia."""
+    n = re.sub(r"\(.*?\)", "", n)
+    n = " ".join(n.replace("-", " ").split())
+    return ALIAS_GEO.get(n, n)
+
+def cargar_catalogo():
+    """Lee ref/ubigeo_inei.csv -> lookups por nombre normalizado (tripleta jerarquica)."""
+    dist_lk, prov_lk, dep_lk = {}, {}, {}
+    with open(UBIGEO_CSV, encoding="utf-8") as fh:
+        for row in csv.DictReader(fh):
+            u = row["inei"].strip()
+            de, pr, di = g(norm(row["departamento"])), g(norm(row["provincia"])), g(norm(row["distrito"]))
+            dist_lk[(de, pr, di)] = u
+            prov_lk.setdefault((de, pr), u[:4] + "00")
+            dep_lk.setdefault(de, u[:2] + "0000")
+    # overrides manuales para distritos nuevos/renombrados (ref/ubigeo_overrides.csv)
+    ov = os.path.join(os.path.dirname(UBIGEO_CSV), "ubigeo_overrides.csv")
+    if os.path.exists(ov):
+        with open(ov, encoding="utf-8") as fh:
+            for row in csv.DictReader(fh):
+                if not row.get("inei", "").strip(): continue
+                dist_lk[(g(norm(row["departamento"])), g(norm(row["provincia"])), g(norm(row["distrito"])))] = row["inei"].strip()
+    return dist_lk, prov_lk, dep_lk
+
+def _dep_cat(n):
+    """Nombre de departamento del nodo -> departamento del catalogo oficial."""
+    if "callao" in n: return "callao"
+    if "lima metropolitana" in n or "region lima" in n: return "lima"
+    return n
+
+def resolver_ubigeo(ubigeos):
+    """Devuelve {ubigeo_id -> codigo INEI oficial (6 digitos)} emparejando por jerarquia."""
+    dist_lk, prov_lk, dep_lk = cargar_catalogo()
+    byid = {u[0]: u for u in ubigeos}            # (uid, nombre, norm, nivel, padre, cod_dep)
+    out = {}
+    for uid, nom, n, nivel, padre, cod in ubigeos:
+        code = None
+        if nivel == "nacional":
+            code = "000000"
+        elif nivel == "departamento":
+            if "callao" in n:              code = "070000"
+            elif "lima metropolitana" in n: code = "150100"   # provincia Lima
+            elif "region lima" in n:        code = "150000"
+            else:                           code = dep_lk.get(n)
+        elif nivel == "provincia":
+            pa = byid.get(padre)
+            de = _dep_cat(pa[2]) if pa else ""
+            code = prov_lk.get((g(de), g(n)))
+        elif nivel == "distrito":
+            pa = byid.get(padre)
+            if pa and pa[3] == "provincia":
+                gp = byid.get(pa[4]); de = _dep_cat(gp[2]) if gp else ""; pr = pa[2]
+            elif pa and "callao" in pa[2]:            de, pr = "callao", "callao"
+            elif pa and "lima metropolitana" in pa[2]: de, pr = "lima", "lima"
+            else:                                      de, pr = (_dep_cat(pa[2]), pa[2]) if pa else ("", "")
+            code = dist_lk.get((g(de), g(pr), g(n)))
+        out[uid] = code
+    return out
+
 # ---------------------------------------------------------------- carga a SQLite
 def main():
     if os.path.exists(DB): os.remove(DB)
@@ -174,7 +239,8 @@ def main():
                         FOREIGN KEY(cod_tema) REFERENCES tema(cod_tema));
     CREATE TABLE nota(cod_tema TEXT, texto TEXT);
     CREATE TABLE dim_ubigeo(ubigeo_id TEXT PRIMARY KEY, nombre TEXT, nombre_norm TEXT,
-                            nivel TEXT, padre_id TEXT, cod_departamento TEXT);
+                            nivel TEXT, padre_id TEXT, cod_departamento TEXT,
+                            ubigeo_inei TEXT);
     -- dimensiones factorizadas (star schema) -> base ligera
     CREATE TABLE dim_fila(fila_id INTEGER PRIMARY KEY, etiqueta TEXT, etiqueta_norm TEXT);
     CREATE TABLE dim_columna(col_id INTEGER PRIMARY KEY, columna TEXT);
@@ -186,10 +252,33 @@ def main():
         FOREIGN KEY(col_id)    REFERENCES dim_columna(col_id));
     """)
 
-    # dim_ubigeo
+    # dim_ubigeo + indexado UBIGEO oficial (INEI)
     ubis = build_ubigeo("01_indicadores_demograficos.xlsx")
-    cx.executemany("INSERT INTO dim_ubigeo VALUES(?,?,?,?,?,?)", ubis)
+    inei = resolver_ubigeo(ubis)
+    ubis_i = [u + (inei.get(u[0]),) for u in ubis]
+    cx.executemany("INSERT INTO dim_ubigeo VALUES(?,?,?,?,?,?,?)", ubis_i)
     ubi_norms = {u[2] for u in ubis}
+    n_ok = sum(1 for u in ubis if inei.get(u[0]))
+    print(f"  UBIGEO INEI resuelto: {n_ok}/{len(ubis)} nodos")
+    # exportar pendientes (nodos sin codigo) con su contexto -> plantilla para overrides
+    byid = {u[0]: u for u in ubis}
+    def contexto(u):
+        dep = prov = ""
+        if u[3] == "provincia":
+            pa = byid.get(u[4]); dep = pa[1] if pa else ""; prov = u[1]
+        elif u[3] == "distrito":
+            pa = byid.get(u[4])
+            if pa and pa[3] == "provincia":
+                gp = byid.get(pa[4]); dep = gp[1] if gp else ""; prov = pa[1]
+            elif pa: dep = pa[1]; prov = pa[1]
+        return dep, prov
+    pend = [u for u in ubis if not inei.get(u[0]) and u[3] != "nacional"]
+    with open(os.path.join(os.path.dirname(UBIGEO_CSV), "ubigeo_pendientes.csv"), "w",
+              encoding="utf-8", newline="") as fh:
+        w = csv.writer(fh); w.writerow(["ubigeo_id", "nivel", "departamento", "provincia", "distrito", "inei"])
+        for u in pend:
+            dep, prov = contexto(u)
+            w.writerow([u[0], u[3], dep, prov, u[1] if u[3] == "distrito" else "", ""])
 
     fila_cache = {}; col_cache = {}   # texto -> id  (deduplicacion)
     def fid(etq, en):
@@ -249,7 +338,7 @@ def main():
     -- inferido del prefijo de la etiqueta. Nivel nacional/departamento/provincia (los
     -- nombres son unicos); a nivel distrito hay homonimos -> requiere codigo ubigeo oficial.
     CREATE VIEW v_dato_geo AS
-      SELECT d.*, u.ubigeo_id, u.nombre AS ubigeo_nombre, u.nivel AS ubigeo_nivel,
+      SELECT d.*, u.ubigeo_id, u.ubigeo_inei, u.nombre AS ubigeo_nombre, u.nivel AS ubigeo_nivel,
              u.cod_departamento
       FROM v_dato d JOIN dim_ubigeo u
         ON u.nombre_norm = TRIM(CASE
@@ -266,6 +355,7 @@ def main():
     CREATE INDEX ix_dato_fila   ON dato(fila_id);
     CREATE INDEX ix_fila_norm   ON dim_fila(etiqueta_norm);
     CREATE INDEX ix_ubi_norm    ON dim_ubigeo(nombre_norm);
+    CREATE INDEX ix_ubi_inei    ON dim_ubigeo(ubigeo_inei);
     """)
     con.commit()
     cx.execute("VACUUM"); con.commit()
