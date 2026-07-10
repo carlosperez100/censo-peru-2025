@@ -8,10 +8,14 @@ interactivo** del Perú con marca GEMSES.
 ## 🗺️ Mapa interactivo (GitHub Pages)
 **→ https://carlosperez100.github.io/censo-peru-2025/**
 
-Réplica del visor del INEI por departamento, alimentada por `censo2025.db`, con el
-**Modelo GEMSES**. Indicadores seleccionables: población, densidad (hab/km²), % mujeres,
-% urbana, % rural, índice de masculinidad. Página autocontenida (`index.html`, sin
-dependencias externas); se regenera con `python mapa_gemses/generar_mapa.py`.
+Réplica del visor del INEI, alimentada por `censo2025.db`, con el **Modelo GEMSES**:
+- **Dos capas**: *Demografía* (población, densidad, % urbana, % mujeres) y
+  **Salud — afiliación a seguro** (% con seguro, **% SIS**, **% EsSalud**, % sin seguro, % privado).
+- **Drill-down**: clic en un departamento → mapa de sus **provincias** (con zoom), tanto para
+  demografía como para salud; botón «← Perú» para volver.
+- **Panel «¿Dónde están los afiliados?»**: desglose SIS / EsSalud / privado / sin seguro por unidad.
+- Página autocontenida (`index.html`, sin dependencias); se regenera con
+  `python mapa_gemses/generar_mapa.py`. Datos de salud: cuadro **SALUD06** vía la vista `v_seguro`.
 
 Fuente oficial: <https://censos2025.inei.gob.pe> → Cuadros estadísticos → Tabulados → Población.
 
@@ -83,8 +87,10 @@ python ../../../gemses-grafos/grafos_censo2025/build_grafo_censo.py   # regenera
 ```
 
 ## Pendientes / mejoras
-1. ✅ **Código UBIGEO oficial** en `dim_ubigeo` (99,5 %); completar los 10 distritos nuevos en
+1. ✅ **Código UBIGEO oficial** en `dim_ubigeo` (99,7 %); completar 6 distritos nuevos en
    `ref/ubigeo_overrides.csv`.
-2. Incorporar Tabulados de **Vivienda**, **Hogar** y **Comunidades Indígenas** (mismo método).
-3. Drill-down del mapa a provincia/distrito usando `ubigeo_inei`.
-4. Vistas curadas por dimensión (sexo/edad/área) para los cuadros demográficos clave.
+2. ✅ **Afiliación a seguro de salud** integrada (`v_seguro`) y mapeada (SIS/EsSalud/privado/sin seguro).
+3. ✅ **Drill-down** departamento→provincia en el mapa.
+4. Incorporar Tabulados de **Vivienda**, **Hogar** y **Comunidades Indígenas** (mismo método).
+5. Drill-down a **distrito** (población; salud solo llega a provincia en el censo).
+6. Vistas curadas por dimensión (sexo/edad/área) para los cuadros demográficos clave.

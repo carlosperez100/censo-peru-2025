@@ -7,7 +7,7 @@ desanidadas a formato largo) + dimension geografica que enlaza por nombre normal
 Entrada : ./raw/*.xlsx  (8 temas descargados del portal INEI)
 Salida  : ./censo2025.db (SQLite)  +  ./grafo/ubigeo.json  +  ./DICCIONARIO.md
 """
-import openpyxl, sqlite3, glob, os, re, json, csv, unicodedata
+import openpyxl, sqlite3, glob, os, re, json, csv, unicodedata, difflib
 
 RAW = os.path.join(os.path.dirname(__file__), "raw")
 DB  = os.path.join(os.path.dirname(__file__), "censo2025.db")
@@ -27,9 +27,10 @@ TEMAS = {  # archivo -> (codigo_tema, nombre_tema)
 }
 
 def norm(s):
-    """normaliza texto: minusculas, sin tildes, sin espacios extra."""
+    """normaliza texto: minusculas, sin tildes, sin espacios extra, sin marca de nota (2/)."""
     if s is None: return ""
     s = str(s).replace("\n", " ").strip()
+    s = re.sub(r"\s*\d+/\s*$", "", s)          # quita marcador de nota al pie: "Lima 2/" -> "Lima"
     s = " ".join(s.split())
     s = "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn")
     return s.lower()
@@ -177,6 +178,7 @@ def g(n):
 def cargar_catalogo():
     """Lee ref/ubigeo_inei.csv -> lookups por nombre normalizado (tripleta jerarquica)."""
     dist_lk, prov_lk, dep_lk = {}, {}, {}
+    prov_dist = {}   # DDPP -> [(dist_norm, inei)]  (para fuzzy dentro de la provincia)
     with open(UBIGEO_CSV, encoding="utf-8") as fh:
         for row in csv.DictReader(fh):
             u = row["inei"].strip()
@@ -184,6 +186,7 @@ def cargar_catalogo():
             dist_lk[(de, pr, di)] = u
             prov_lk.setdefault((de, pr), u[:4] + "00")
             dep_lk.setdefault(de, u[:2] + "0000")
+            prov_dist.setdefault(u[:4], []).append((di, u))
     # overrides manuales para distritos nuevos/renombrados (ref/ubigeo_overrides.csv)
     ov = os.path.join(os.path.dirname(UBIGEO_CSV), "ubigeo_overrides.csv")
     if os.path.exists(ov):
@@ -191,7 +194,7 @@ def cargar_catalogo():
             for row in csv.DictReader(fh):
                 if not row.get("inei", "").strip(): continue
                 dist_lk[(g(norm(row["departamento"])), g(norm(row["provincia"])), g(norm(row["distrito"])))] = row["inei"].strip()
-    return dist_lk, prov_lk, dep_lk
+    return dist_lk, prov_lk, dep_lk, prov_dist
 
 def _dep_cat(n):
     """Nombre de departamento del nodo -> departamento del catalogo oficial."""
@@ -200,32 +203,54 @@ def _dep_cat(n):
     return n
 
 def resolver_ubigeo(ubigeos):
-    """Devuelve {ubigeo_id -> codigo INEI oficial (6 digitos)} emparejando por jerarquia."""
-    dist_lk, prov_lk, dep_lk = cargar_catalogo()
+    """Devuelve {ubigeo_id -> codigo INEI oficial (6 digitos)} emparejando por jerarquia.
+    Tiers: exacto -> alias -> override -> fuzzy dentro de la MISMA provincia."""
+    dist_lk, prov_lk, dep_lk, prov_dist = cargar_catalogo()
     byid = {u[0]: u for u in ubigeos}            # (uid, nombre, norm, nivel, padre, cod_dep)
     out = {}
+    # ---- Pase 1: exacto / alias / override / departamento / provincia (sin fuzzy)
+    def contexto_dist(padre):
+        pa = byid.get(padre)
+        if pa and pa[3] == "provincia":
+            gp = byid.get(pa[4]); return (_dep_cat(gp[2]) if gp else ""), pa[2]
+        if pa and "callao" in pa[2]:             return "callao", "callao"
+        if pa and "lima metropolitana" in pa[2]: return "lima", "lima"
+        return (_dep_cat(pa[2]), pa[2]) if pa else ("", "")
     for uid, nom, n, nivel, padre, cod in ubigeos:
         code = None
         if nivel == "nacional":
             code = "000000"
         elif nivel == "departamento":
             if "callao" in n:              code = "070000"
-            elif "lima metropolitana" in n: code = "150100"   # provincia Lima
+            elif "lima metropolitana" in n: code = "150100"
             elif "region lima" in n:        code = "150000"
             else:                           code = dep_lk.get(n)
         elif nivel == "provincia":
-            pa = byid.get(padre)
-            de = _dep_cat(pa[2]) if pa else ""
+            pa = byid.get(padre); de = _dep_cat(pa[2]) if pa else ""
             code = prov_lk.get((g(de), g(n)))
         elif nivel == "distrito":
-            pa = byid.get(padre)
-            if pa and pa[3] == "provincia":
-                gp = byid.get(pa[4]); de = _dep_cat(gp[2]) if gp else ""; pr = pa[2]
-            elif pa and "callao" in pa[2]:            de, pr = "callao", "callao"
-            elif pa and "lima metropolitana" in pa[2]: de, pr = "lima", "lima"
-            else:                                      de, pr = (_dep_cat(pa[2]), pa[2]) if pa else ("", "")
+            de, pr = contexto_dist(padre)
             code = dist_lk.get((g(de), g(pr), g(n)))
         out[uid] = code
+    usados = {c for c in out.values() if c}
+    # ---- Pase 2: fuzzy dentro de la MISMA provincia, umbral alto y SIN duplicar codigo
+    fuzzy_log = []
+    for uid, nom, n, nivel, padre, cod in ubigeos:
+        if out[uid] or nivel != "distrito":
+            continue
+        de, pr = contexto_dist(padre)
+        ddpp = (prov_lk.get((g(de), g(pr))) or "")[:4]
+        best, score = None, 0.0
+        for dn, du in prov_dist.get(ddpp, []):
+            if du in usados:            # no reasignar un codigo ya tomado
+                continue
+            r = difflib.SequenceMatcher(None, g(n), dn).ratio()
+            if r > score: best, score = du, r
+        if best and score >= 0.85:
+            out[uid] = best; usados.add(best); fuzzy_log.append((nom, best, round(score, 2)))
+    if fuzzy_log:
+        print("  fuzzy aceptado (>=0.85, provincia, sin dup): " +
+              "; ".join(f"{a}->{b}({s})" for a, b, s in fuzzy_log))
     return out
 
 # ---------------------------------------------------------------- carga a SQLite
@@ -348,6 +373,18 @@ def main():
              WHEN d.etiqueta_norm LIKE 'provincia %' THEN 'provincia'
              WHEN d.etiqueta_norm = 'peru'           THEN 'nacional'
              ELSE 'departamento' END;
+    -- AFILIACION A SEGURO DE SALUD por ubigeo (SALUD06) -> \"donde estan los afiliados\"
+    CREATE VIEW v_seguro AS
+      SELECT ubigeo_id, ubigeo_inei, ubigeo_nombre, ubigeo_nivel, cod_departamento,
+        SUM(CASE WHEN columna='Total'                     THEN valor END) AS poblacion,
+        SUM(CASE WHEN columna='Ninguno'                   THEN valor END) AS sin_seguro,
+        SUM(CASE WHEN columna LIKE '%Seguro Integral%'    THEN valor END) AS sis,
+        SUM(CASE WHEN columna LIKE '%EsSalud%'            THEN valor END) AS essalud,
+        SUM(CASE WHEN columna LIKE '%fuerzas armadas%'    THEN valor END) AS ffaa_pnp,
+        SUM(CASE WHEN columna LIKE '%privado%'            THEN valor END) AS privado,
+        SUM(CASE WHEN columna LIKE '%Otro seguro%'        THEN valor END) AS otro
+      FROM v_dato_geo WHERE hoja='SALUD06'
+      GROUP BY ubigeo_id, ubigeo_inei, ubigeo_nombre, ubigeo_nivel, cod_departamento;
     """)
     # indices
     cx.executescript("""
