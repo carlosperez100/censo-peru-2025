@@ -79,3 +79,10 @@ FROM ipress GROUP BY institucion, sector ORDER BY n_establecimientos DESC;
 -- 14) IPRESS de EsSalud en un departamento (por ubigeo)
 SELECT nombre, categoria, distrito FROM ipress
 WHERE sector='EsSalud' AND substr(ubigeo,1,2)='15' ORDER BY categoria;
+
+-- 15) OFERTA vs DEMANDA: brecha OMS y alineación por red (SIS->público, EsSalud->EsSalud)
+SELECT u.nombre AS departamento, od.poblacion, od.pob_sis, od.pob_essalud,
+       od.pct_oms AS pct_umbral_oms, od.brecha_oms AS profesionales_faltantes,
+       od.med_pub AS medicos_publicos_x10k_SIS, od.med_ess AS medicos_essalud_x10k_afiliados
+FROM oferta_demanda od JOIN dim_ubigeo u ON u.ubigeo_inei = od.ubigeo||'0000'
+WHERE od.nivel='departamento' ORDER BY od.pct_oms ASC;

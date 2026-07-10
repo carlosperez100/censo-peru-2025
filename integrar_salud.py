@@ -29,21 +29,26 @@ def main(db=DB):
     con = sqlite3.connect(db); cx = con.cursor()
 
     # ---- poblacion total del censo por DD (departamento) y DDPP (provincia) ----
+    # OJO: emparejar POR NIVEL. Si se estripa 'provincia ' para el depto, la provincia capital
+    # homonima (ej. PROVINCIA AREQUIPA) se sumaria al depto AREQUIPA (doble conteo).
     pop_dd, pop_ddpp = {}, {}
-    for inei, nivel, nombre, val in cx.execute("""
-        SELECT u.ubigeo_inei, u.nivel, u.nombre, d.valor
-        FROM dato d JOIN cuadro c ON c.cuadro_id=d.cuadro_id
-             JOIN dim_fila f ON f.fila_id=d.fila_id
-             JOIN dim_columna k ON k.col_id=d.col_id
-             JOIN dim_ubigeo u ON u.nombre_norm=REPLACE(REPLACE(f.etiqueta_norm,'provincia ',''),'distrito ','')
-        WHERE c.hoja='INDDEM06' AND k.columna='Total' AND u.ubigeo_inei IS NOT NULL
-          AND (u.nivel='departamento' OR u.nivel='provincia')"""):
-        if nivel == "departamento":
-            pop_dd[inei[:2]] = pop_dd.get(inei[:2], 0) + (val or 0)   # Lima = Metro + Region
-            if nombre == "Lima Metropolitana": pop_ddpp["1501"] = val or 0
-            if nombre == "Prov. Const. del Callao": pop_ddpp["0701"] = val or 0
-        else:
-            pop_ddpp[inei[:4]] = val or 0
+    for inei, nombre, val in cx.execute("""
+        SELECT u.ubigeo_inei, u.nombre, d.valor FROM dato d
+        JOIN cuadro c ON c.cuadro_id=d.cuadro_id JOIN dim_fila f ON f.fila_id=d.fila_id
+        JOIN dim_columna k ON k.col_id=d.col_id
+        JOIN dim_ubigeo u ON u.nombre_norm=f.etiqueta_norm AND u.nivel='departamento'
+        WHERE c.hoja='INDDEM06' AND k.columna='Total' AND u.ubigeo_inei IS NOT NULL"""):
+        pop_dd[inei[:2]] = pop_dd.get(inei[:2], 0) + (val or 0)       # Lima = Metro + Region
+        if nombre == "Lima Metropolitana": pop_ddpp["1501"] = val or 0
+        if nombre == "Prov. Const. del Callao": pop_ddpp["0701"] = val or 0
+    for inei, val in cx.execute("""
+        SELECT u.ubigeo_inei, d.valor FROM dato d
+        JOIN cuadro c ON c.cuadro_id=d.cuadro_id JOIN dim_fila f ON f.fila_id=d.fila_id
+        JOIN dim_columna k ON k.col_id=d.col_id
+        JOIN dim_ubigeo u ON u.nombre_norm=SUBSTR(f.etiqueta_norm,11) AND u.nivel='provincia'
+        WHERE c.hoja='INDDEM06' AND k.columna='Total' AND f.etiqueta_norm LIKE 'provincia %'
+          AND u.ubigeo_inei IS NOT NULL"""):
+        pop_ddpp[inei[:4]] = val or 0
 
     # ---- RENIPRESS -> tabla ipress ----
     ip = pd.read_csv(RENIPRESS, sep=";", dtype=str, encoding="latin-1", on_bad_lines="skip").fillna("")
@@ -100,6 +105,64 @@ def main(db=DB):
     cargar("departamento", "dd", "dd", pop_dd)
     cargar("provincia", "ddpp", "ddpp", pop_ddpp)
 
+    # ================= OFERTA vs DEMANDA por ubigeo =================
+    # demanda: poblacion por tipo de seguro (SIS -> red publica; EsSalud -> red EsSalud)
+    seg_dd, seg_ddpp = {}, {}   # DD/DDPP -> {pob, sis, ess}
+    for inei, nivel, nombre, pob, sis, ess in cx.execute(
+        "SELECT ubigeo_inei, ubigeo_nivel, ubigeo_nombre, poblacion, sis, essalud FROM v_seguro WHERE ubigeo_inei IS NOT NULL"):
+        rec = dict(pob=pob or 0, sis=sis or 0, ess=ess or 0)
+        if nivel == "departamento":
+            d = seg_dd.setdefault(inei[:2], dict(pob=0, sis=0, ess=0))
+            for k in rec: d[k] += rec[k]                          # Lima = Metro + Region
+            if nombre == "Lima Metropolitana": seg_ddpp["1501"] = rec
+            if nombre == "Prov. Const. del Callao": seg_ddpp["0701"] = rec
+        else:
+            seg_ddpp[inei[:4]] = rec
+    # oferta por red (grupo de sector)
+    def grp(s):
+        s = str(s).upper()
+        if "ESSALUD" in s: return "essalud"
+        if "MINSA" in s or "GOBIERNO REGIONAL" in s: return "publico"
+        if "PRIVADO" in s: return "privado"
+        return "otro"
+    rh_out["grp"] = rh_out["sector"].map(grp)
+    OMS = 44.5   # umbral OMS: medicos+enfermeras+obstetras por 10 000 hab
+
+    cx.execute("DROP TABLE IF EXISTS oferta_demanda")
+    cx.execute("""CREATE TABLE oferta_demanda(
+        nivel TEXT, ubigeo TEXT, poblacion INT, pob_sis INT, pob_essalud INT,
+        ipress INT, ipress_essalud INT, ipress_publico INT, ipress_privado INT,
+        medicos INT, med_essalud INT, med_publico INT, enfermeras INT, obstetras INT,
+        hab_medico REAL, pob_ipress REAL, rhus REAL, pct_oms REAL, brecha_oms INT,
+        med_ess REAL, med_pub REAL)""")
+
+    def cargar_od(nivel, krh, kip, popdic, segdic):
+        med = rh_out.groupby(krh)[["medicos","enfermeras","obstetras"]].sum()
+        med_g = rh_out.groupby([krh,"grp"])["medicos"].sum()
+        nip = ip_out.groupby(kip).size()
+        nip_s = ip_out.groupby([kip,"sector"]).size()
+        for key, pob in popdic.items():          # pob = poblacion TOTAL (censo)
+            if not pob: continue
+            seg = segdic.get(key, {"sis":0,"ess":0})   # asegurados (poblacion censada)
+            m  = int(med.loc[key,"medicos"]) if key in med.index else 0
+            e  = int(med.loc[key,"enfermeras"]) if key in med.index else 0
+            ob = int(med.loc[key,"obstetras"]) if key in med.index else 0
+            mE = int(med_g.get((key,"essalud"),0)); mP = int(med_g.get((key,"publico"),0))
+            ni = int(nip.loc[key]) if key in nip.index else 0
+            niE = int(nip_s.get((key,"EsSalud"),0)); niP = int(nip_s.get((key,"MINSA/Gob. Regional"),0))
+            niPr = int(nip_s.get((key,"Privado"),0))
+            rhus = (m+e+ob)/pob*10000
+            brecha = max(0, round(OMS*pob/10000 - (m+e+ob)))
+            cx.execute("INSERT INTO oferta_demanda VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (
+                nivel, key, int(pob), int(seg["sis"]), int(seg["ess"]),
+                ni, niE, niP, niPr, m, mE, mP, e, ob,
+                round(pob/m,0) if m else None, round(pob/ni,0) if ni else None,
+                round(rhus,1), round(rhus/OMS*100,1), int(brecha),
+                round(mE/seg["ess"]*10000,1) if seg["ess"] else None,
+                round(mP/seg["sis"]*10000,1) if seg["sis"] else None))
+    cargar_od("departamento", "dd", "dd", pop_dd, seg_dd)
+    cargar_od("provincia", "ddpp", "ddpp", pop_ddpp, seg_ddpp)
+
     # ---- vistas ----
     cx.executescript("""
     DROP VIEW IF EXISTS v_ipress_sector;
@@ -113,6 +176,8 @@ def main(db=DB):
     nac = cx.execute("SELECT SUM(medicos),SUM(enfermeras),SUM(odontologos),SUM(obstetras),SUM(poblacion) FROM densidad_salud WHERE nivel='departamento'").fetchone()
     print(f"  Nacional: medicos {nac[0]:,} enfermeras {nac[1]:,} odont {nac[2]:,} obstetras {nac[3]:,}")
     print(f"  Densidad nacional /10k: medicos {nac[0]/nac[4]*10000:.1f} enfermeras {nac[1]/nac[4]*10000:.1f}")
+    od = cx.execute("SELECT SUM(medicos+enfermeras+obstetras),SUM(poblacion),SUM(brecha_oms) FROM oferta_demanda WHERE nivel='departamento'").fetchone()
+    print(f"  Oferta-demanda: RHUS nacional {od[0]/od[1]*10000:.1f}/10k (OMS 44.5) | brecha {od[2]:,} profesionales")
     con.close()
 
 if __name__ == "__main__":

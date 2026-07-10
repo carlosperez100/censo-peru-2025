@@ -50,6 +50,7 @@ header{background:linear-gradient(120deg,var(--navy),var(--blue) 58%,var(--teal)
 .ind.active{background:var(--navy);color:#fff;border-color:var(--navy)}
 .ind.salud.active{background:var(--teal);border-color:var(--teal)}
 .ind.oferta.active{background:var(--gold);border-color:var(--gold);color:#3a2d00}
+.ind.equidad.active{background:#8c141e;border-color:#8c141e;color:#fff}
 .bc{display:flex;align-items:center;gap:8px;font-size:13px;margin:10px 0 6px;color:var(--muted)}
 .bc button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 9px;font-size:12px;cursor:pointer;color:var(--blue)}
 .bc b{color:var(--navy)}
@@ -115,6 +116,8 @@ footer .gem{color:var(--navy);font-weight:700}
     <div class="controls" id="cSalud"></div>
     <div class="grp">Oferta de salud — SUSALUD (por 10 000 hab)</div>
     <div class="controls" id="cOferta"></div>
+    <div class="grp">Brecha y equidad — oferta vs demanda</div>
+    <div class="controls" id="cEquidad"></div>
     <div class="bc" id="bc"></div>
     <svg id="map" viewBox="0 0 __W__ __H__" role="img" aria-label="Mapa del Perú"></svg>
     <div class="legend"><span id="lmin">0</span><div class="ramp" id="ramp"></div><span id="lmax">—</span></div>
@@ -142,8 +145,9 @@ footer .gem{color:var(--navy);font-weight:700}
   (población, vivienda y afiliación a seguro) y <a href="http://datos.susalud.gob.pe" target="_blank" rel="noopener">SUSALUD</a>
   (RENIPRESS 2026 y Recursos de Salud por IPRESS). La afiliación puede ser múltiple (los % por tipo pueden sumar >100%);
   la oferta de RR.HH. cubre principalmente IPRESS que reportan a SUSALUD (privados subrepresentados). Densidades por
-  10 000 hab sobre población total del censo. Base única integrada por UBIGEO. Visualización
-  <span class="gem">Modelo GEMSES</span> · Carlos Pérez Pérez.
+  10 000 hab sobre población total del censo. <b>Umbral OMS</b> = 44,5 médicos+enfermeras+obstetras por 10 000 hab
+  (referencia de suficiencia). «Méd. público/SIS» y «Méd. EsSalud» cruzan la oferta de cada red con su población
+  afiliada. Base única integrada por UBIGEO. Visualización <span class="gem">Modelo GEMSES</span> · Carlos Pérez Pérez.
 </footer>
 
 <script>
@@ -173,15 +177,24 @@ const OFERTA=[
  {k:"dcam",t:"Camas /10k",fmt:v=>v.toFixed(1),suf:"",ofe:1},
  {k:"nip",t:"N.º de IPRESS",fmt:v=>v.toLocaleString("es-PE"),suf:"",ofe:1},
 ];
-const ALL=[...DEMO,...SALUD,...OFERTA];
+const EQUIDAD=[
+ {k:"poms",t:"% umbral OMS (44,5)",fmt:v=>v.toFixed(0),suf:"%",eq:1},
+ {k:"habm",t:"Hab. por médico",fmt:v=>v.toLocaleString("es-PE"),suf:"",eq:1},
+ {k:"pobip",t:"Hab. por IPRESS",fmt:v=>v.toLocaleString("es-PE"),suf:"",eq:1},
+ {k:"medpub",t:"Méd. público /10k SIS",fmt:v=>v.toFixed(1),suf:"",eq:1},
+ {k:"medess",t:"Méd. EsSalud /10k aseg.",fmt:v=>v.toFixed(1),suf:"",eq:1},
+ {k:"brecha",t:"Brecha OMS (prof.)",fmt:v=>v.toLocaleString("es-PE"),suf:"",eq:1},
+];
+const ALL=[...DEMO,...SALUD,...OFERTA,...EQUIDAD];
 let cur=DEMO[0], level="nac";  // "nac" o codigo de depto
 
 function lerp(a,b,t){return a+(b-a)*t}
 function hx(c){return c.toString(16).padStart(2,"0")}
-function color(t,mode){const S={demo:[[234,241,251],[10,46,92]],salud:[[224,244,244],[10,84,84]],ofe:[[251,243,220],[150,95,8]]};
+function color(t,mode){const S={demo:[[234,241,251],[10,46,92]],salud:[[224,244,244],[10,84,84]],
+ ofe:[[251,243,220],[150,95,8]],gap:[[247,238,238],[139,20,30]]};
  const [c0,c1]=S[mode]||S.demo;
  return "#"+hx(Math.round(lerp(c0[0],c1[0],t)))+hx(Math.round(lerp(c0[1],c1[1],t)))+hx(Math.round(lerp(c0[2],c1[2],t)));}
-function modeOf(){return cur.sal?"salud":(cur.ofe?"ofe":"demo");}
+function modeOf(){return cur.sal?"salud":(cur.ofe?"ofe":(cur.eq?"gap":"demo"));}
 const svg=document.getElementById("map"), tip=document.getElementById("tip");
 let selected=null;
 
@@ -235,8 +248,10 @@ function detail(d){
  const mx=Math.max(...segs.map(s=>s[1]),1);
  document.getElementById("dSeg").innerHTML=segs.map(s=>
    `<div class="row"><span>${s[0]}</span><span class="bar"><i style="width:${Math.round(s[1]/mx*100)}%;background:${s[2]}"></i></span><span class="val">${s[1]}%</span></div>`).join("");
+ const nn=(v,f)=>v==null?"s/d":f(v);
  const of=[["IPRESS",(d.nip||0).toLocaleString("es-PE")],["Médicos /10k",(d.dmed||0).toFixed(1)],
-   ["Enfermeras /10k",(d.denf||0).toFixed(1)],["Obstetras /10k",(d.dobs||0).toFixed(1)]];
+   ["% umbral OMS",nn(d.poms,v=>v.toFixed(0)+"%")],["Hab. por médico",nn(d.habm,v=>v.toLocaleString("es-PE"))],
+   ["Méd. púb./10k SIS",nn(d.medpub,v=>v.toFixed(1))],["Méd. EsSalud/10k",nn(d.medess,v=>v.toFixed(1))]];
  document.getElementById("dOfe").innerHTML=of.map(x=>`<div class="kpi"><div class="v">${x[1]}</div><div class="l">${x[0]}</div></div>`).join("");
 }
 function drill(cod){ level=cod; selected=null; render(); const dp=DEPS.find(d=>d.cod===cod); if(dp) detail(dp); }
@@ -249,8 +264,11 @@ function crumbs(){
 }
 function nac(){ const s=k=>DEPS.reduce((a,d)=>a+(d[k]||0),0); const pob=s("pob"),ptot=s("ptot");
  const D=k=>+((DEPS.reduce((a,d)=>a+(d[k]||0)*(d.ptot||0)/10000,0))/ptot*10000).toFixed(1);
+ const med=DEPS.reduce((a,d)=>a+(d.dmed||0)*(d.ptot||0)/10000,0); const rhus=D("dmed")+D("denf")+D("dobs");
  return {dep:"Perú",pob:pob,ptot:ptot,viv:s("viv"),hog:s("hog"),den:0,nip:s("nip"),
   dmed:D("dmed"),denf:D("denf"),dobs:D("dobs"),dodo:D("dodo"),dcam:D("dcam"),
+  poms:+(rhus/44.5*100).toFixed(0),habm:med?Math.round(ptot/med):null,pobip:Math.round(ptot/s("nip")),
+  brecha:s("brecha"),medpub:null,medess:null,
   pcon:+((pob-s("sin"))/pob*100).toFixed(1),psin:+(s("sin")/pob*100).toFixed(1),
   psis:+(s("sis")/pob*100).toFixed(1),pess:+(s("essalud")/pob*100).toFixed(1),
   ppri:+(s("priv")/pob*100).toFixed(1),pomis:+(s("pomit")/ptot*100).toFixed(1)}; }
@@ -259,6 +277,7 @@ function nac(){ const s=k=>DEPS.reduce((a,d)=>a+(d[k]||0),0); const pob=s("pob")
 document.getElementById("cDemo").innerHTML=DEMO.map((i,x)=>`<button class="ind${x===0?' active':''}" data-k="${i.k}">${i.t}</button>`).join("");
 document.getElementById("cSalud").innerHTML=SALUD.map(i=>`<button class="ind salud" data-k="${i.k}">${i.t}</button>`).join("");
 document.getElementById("cOferta").innerHTML=OFERTA.map(i=>`<button class="ind oferta" data-k="${i.k}">${i.t}</button>`).join("");
+document.getElementById("cEquidad").innerHTML=EQUIDAD.map(i=>`<button class="ind equidad" data-k="${i.k}">${i.t}</button>`).join("");
 document.querySelectorAll(".ind").forEach(b=>b.addEventListener("click",()=>{
  document.querySelectorAll(".ind").forEach(x=>x.classList.remove("active"));
  b.classList.add("active"); cur=ALL.find(i=>i.k===b.dataset.k); render();}));
@@ -366,6 +385,16 @@ try:
             dic[u] = dict(nip=ni, dmed=dm, denf=de, dodo=do, dobs=dob, dcam=dca)
 except Exception:
     pass
+# oferta vs demanda (brecha OMS, hab/medico, alineacion por red)
+OD_D, OD_P = {}, {}
+try:
+    for lv, dic in (("departamento", OD_D), ("provincia", OD_P)):
+        for u, poms, habm, pobip, br, mp, me in cx.execute(
+            "SELECT ubigeo,pct_oms,hab_medico,pob_ipress,brecha_oms,med_pub,med_ess "
+            "FROM oferta_demanda WHERE nivel=?", (lv,)):
+            dic[u] = dict(poms=poms, habm=habm, pobip=pobip, brecha=br, medpub=mp, medess=me)
+except Exception:
+    pass
 con.close()
 
 def dep_pob(nombdep):
@@ -457,10 +486,12 @@ for f in gdep["features"]:
                       p.get("rur",0), ha/100.0 if ha else 0, sg,
                       ptot=combina(PTOT_D,nombdep), pomit=combina(POMI_D,nombdep),
                       viv=combina(VIV_D,nombdep), hog=combina(HOG_D,nombdep))
-    sd = DENS_D.get(DEP2DD.get(norm(nombdep)), {})
+    dd = DEP2DD.get(norm(nombdep)); sd = DENS_D.get(dd, {}); od = OD_D.get(dd, {})
     ind.update({"dep": nombdep.title(), "d": d, "cod": norm(nombdep),
                 "nip": sd.get("nip",0), "dmed": sd.get("dmed",0), "denf": sd.get("denf",0),
                 "dodo": sd.get("dodo",0), "dobs": sd.get("dobs",0), "dcam": sd.get("dcam",0),
+                "poms": od.get("poms"), "habm": od.get("habm"), "pobip": od.get("pobip"),
+                "brecha": od.get("brecha"), "medpub": od.get("medpub"), "medess": od.get("medess"),
                 "vb": [round(bx[0]-6,1), round(bx[1]-6,1), round(bx[2]-bx[0]+12,1), round(bx[3]-bx[1]+12,1)]})
     deps.append(ind)
 
@@ -477,11 +508,13 @@ for f in gprov["features"]:
                       ha/100.0 if ha else 0, sg,
                       ptot=PTOT_P.get(ddpp,0) or 0, pomit=POMI_P.get(ddpp,0) or 0,
                       viv=VIV_P.get(ddpp,0) or 0, hog=HOG_P.get(ddpp,0) or 0)
-    sd = DENS_P.get(ddpp, {})
+    sd = DENS_P.get(ddpp, {}); od = OD_P.get(ddpp, {})
     ind.update({"dep": depcod.title(), "prov": nombprov.title(), "d": d,
                 "depcod": depcod, "ubigeo": ddpp,
                 "nip": sd.get("nip",0), "dmed": sd.get("dmed",0), "denf": sd.get("denf",0),
-                "dodo": sd.get("dodo",0), "dobs": sd.get("dobs",0), "dcam": sd.get("dcam",0)})
+                "dodo": sd.get("dodo",0), "dobs": sd.get("dobs",0), "dcam": sd.get("dcam",0),
+                "poms": od.get("poms"), "habm": od.get("habm"), "pobip": od.get("pobip"),
+                "brecha": od.get("brecha"), "medpub": od.get("medpub"), "medess": od.get("medess")})
     provs.append(ind)
 
 def fmt(n): return f"{int(n):,}".replace(",", " ")
