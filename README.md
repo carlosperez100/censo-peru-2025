@@ -9,8 +9,11 @@ interactivo** del Perú con marca GEMSES.
 **→ https://carlosperez100.github.io/censo-peru-2025/**
 
 Réplica del visor del INEI, alimentada por `censo2025.db`, con el **Modelo GEMSES**:
-- **Dos capas**: *Demografía* (población, densidad, % urbana, % mujeres) y
-  **Salud — afiliación a seguro** (% con seguro, **% SIS**, **% EsSalud**, % sin seguro, % privado).
+- **Header = recuadro oficial INEI**: Población **total** (34 157 732), **censada** (32 706 028),
+  **omitida** (1 451 704), **viviendas particulares** (13 762 606) y **hogares** (10 570 171).
+- **Dos capas**: *Demografía* (población total/censada, % omisión, densidad, % urbana, % mujeres,
+  viviendas, hogares) y **Salud — afiliación a seguro** (% con seguro, **% SIS**, **% EsSalud**,
+  % sin seguro, % privado).
 - **Drill-down**: clic en un departamento → mapa de sus **provincias** (con zoom), tanto para
   demografía como para salud; botón «← Perú» para volver.
 - **Panel «¿Dónde están los afiliados?»**: desglose SIS / EsSalud / privado / sin seguro por unidad.

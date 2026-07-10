@@ -24,6 +24,8 @@ TEMAS = {  # archivo -> (codigo_tema, nombre_tema)
  "06_discapacidad.xlsx":             ("DIS", "Discapacidad"),
  "07_etnicidad.xlsx":                ("ETN", "Etnicidad"),
  "08_poblacion_edad_trabajar.xlsx":  ("PET", "Poblacion en edad de trabajar"),
+ "09_vivienda_caracteristicas.xlsx": ("VIV", "Vivienda - caracteristicas"),
+ "10_vivienda_servicios.xlsx":       ("VSB", "Vivienda - servicios basicos"),
 }
 
 def norm(s):

@@ -35,9 +35,11 @@ header{background:linear-gradient(120deg,var(--navy),var(--blue) 58%,var(--teal)
 .logo b{color:var(--gold)}
 .htxt h1{margin:0;font-size:19px;font-weight:700}
 .htxt p{margin:2px 0 0;font-size:13px;opacity:.9}
-.hsum{display:flex;gap:18px;margin-top:10px;flex-wrap:wrap}
+.hsum{display:flex;gap:22px;margin-top:10px;flex-wrap:wrap}
 .hsum div{font-size:12px;opacity:.92}
 .hsum b{display:block;font-size:16px;color:var(--gold)}
+.hsum.hsal{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.18)}
+.hsum.hsal b{color:#bfe3e3}
 .wrap{max-width:1180px;margin:16px auto;padding:0 16px;display:grid;grid-template-columns:1.3fr .9fr;gap:18px}
 @media(max-width:900px){.wrap{grid-template-columns:1fr}}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 1px 3px rgba(10,46,92,.05)}
@@ -91,7 +93,13 @@ footer .gem{color:var(--navy);font-weight:700}
     </div>
   </div>
   <div class="hsum">
-    <div>Población censada<b>__TOTAL__</b></div>
+    <div>Población total<b>__PTOT__</b></div>
+    <div>Población censada<b>__CENS__</b></div>
+    <div>Población omitida<b>__OMIT__</b></div>
+    <div>Viviendas particulares<b>__VIV__</b></div>
+    <div>Hogares censados<b>__HOG__</b></div>
+  </div>
+  <div class="hsum hsal">
     <div>Afiliados al SIS<b>__SIS__</b></div>
     <div>Afiliados a EsSalud<b>__ESS__</b></div>
     <div>Sin ningún seguro<b>__SIN__</b></div>
@@ -134,10 +142,14 @@ footer .gem{color:var(--navy);font-weight:700}
 <script>
 const DEPS=__DEPS__, PROVS=__PROVS__;
 const DEMO=[
- {k:"pob",t:"Población",fmt:v=>v.toLocaleString("es-PE"),suf:""},
+ {k:"ptot",t:"Población total",fmt:v=>v.toLocaleString("es-PE"),suf:""},
+ {k:"pob",t:"Población censada",fmt:v=>v.toLocaleString("es-PE"),suf:""},
+ {k:"pomis",t:"% Omisión censal",fmt:v=>v.toFixed(1),suf:"%"},
  {k:"den",t:"Densidad",fmt:v=>v.toLocaleString("es-PE"),suf:" hab/km²"},
  {k:"purb",t:"% Urbana",fmt:v=>v.toFixed(1),suf:"%"},
  {k:"pmuj",t:"% Mujeres",fmt:v=>v.toFixed(1),suf:"%"},
+ {k:"viv",t:"Viviendas",fmt:v=>v.toLocaleString("es-PE"),suf:""},
+ {k:"hog",t:"Hogares",fmt:v=>v.toLocaleString("es-PE"),suf:""},
 ];
 const SALUD=[
  {k:"pcon",t:"% Con seguro",fmt:v=>v.toFixed(1),suf:"%",sal:1},
@@ -198,8 +210,9 @@ function detail(d){
  const esProv = d.prov!==undefined;
  document.getElementById("dName").textContent=esProv?d.prov:d.dep;
  document.getElementById("dSub").textContent=esProv?("Provincia · "+d.dep):(d.dep==="Perú"?"Nivel nacional":"Departamento");
- const kp=[["Población",d.pob.toLocaleString("es-PE")],["Con seguro",d.pcon+"%"],
-   ["Densidad",d.den.toLocaleString("es-PE")+" hab/km²"],["Sin seguro",d.psin+"%"]];
+ const kp=[["Población total",(d.ptot||0).toLocaleString("es-PE")],["Población censada",d.pob.toLocaleString("es-PE")],
+   ["Viviendas",(d.viv||0).toLocaleString("es-PE")],["Hogares",(d.hog||0).toLocaleString("es-PE")],
+   ["Con seguro",d.pcon+"%"],["Densidad",d.den.toLocaleString("es-PE")+" hab/km²"]];
  document.getElementById("dKpis").innerHTML=kp.map(x=>`<div class="kpi"><div class="v">${x[1]}</div><div class="l">${x[0]}</div></div>`).join("");
  const segs=[["SIS",d.psis,"#12a5a5"],["EsSalud",d.pess,"#124a8f"],["Privado",d.ppri,"#e0a80d"],["Sin seguro",d.psin,"#c0392b"]];
  const mx=Math.max(...segs.map(s=>s[1]),1);
@@ -214,7 +227,11 @@ function crumbs(){
    bc.innerHTML=`<button id="back">← Perú</button> <b>${dp?dp.dep:""}</b> · provincias`;
    document.getElementById("back").addEventListener("click",()=>{level="nac";selected=null;render();detail(nac());}); }
 }
-function nac(){ return {dep:"Perú",prov:"Perú",pob:__TOTALN__,den:0,pcon:0,psin:0,psis:0,pess:0,ppri:0}; }
+function nac(){ const s=k=>DEPS.reduce((a,d)=>a+(d[k]||0),0); const pob=s("pob"),ptot=s("ptot");
+ return {dep:"Perú",pob:pob,ptot:ptot,viv:s("viv"),hog:s("hog"),den:0,
+  pcon:+((pob-s("sin"))/pob*100).toFixed(1),psin:+(s("sin")/pob*100).toFixed(1),
+  psis:+(s("sis")/pob*100).toFixed(1),pess:+(s("essalud")/pob*100).toFixed(1),
+  ppri:+(s("priv")/pob*100).toFixed(1),pmuis:0,pomis:+(s("pomit")/ptot*100).toFixed(1)}; }
 
 // controles
 document.getElementById("cDemo").innerHTML=DEMO.map((i,x)=>`<button class="ind${x===0?' active':''}" data-k="${i.k}">${i.t}</button>`).join("");
@@ -230,6 +247,43 @@ detail([...DEPS].sort((a,b)=>b.pob-a.pob)[0]);
 """
 
 con = sqlite3.connect(DB); cx = con.cursor()
+
+# helpers para extraer un valor por departamento (por nombre) y por provincia (por DDPP)
+def by_dep(hoja, col):
+    out = {}
+    for nombre, val in cx.execute("""
+        SELECT u.nombre, d.valor FROM dato d
+        JOIN cuadro c ON c.cuadro_id=d.cuadro_id JOIN dim_fila f ON f.fila_id=d.fila_id
+        JOIN dim_columna k ON k.col_id=d.col_id
+        JOIN dim_ubigeo u ON u.nombre_norm=f.etiqueta_norm AND u.nivel='departamento'
+        WHERE c.hoja=? AND k.columna=?""", (hoja, col)):
+        out[norm(nombre)] = val
+    return out
+def by_ddpp(hoja, col):
+    out = {}
+    for inei, val in cx.execute("""
+        SELECT u.ubigeo_inei, d.valor FROM dato d
+        JOIN cuadro c ON c.cuadro_id=d.cuadro_id JOIN dim_fila f ON f.fila_id=d.fila_id
+        JOIN dim_columna k ON k.col_id=d.col_id
+        JOIN dim_ubigeo u ON u.nombre_norm=REPLACE(REPLACE(f.etiqueta_norm,'provincia ',''),'distrito ','')
+        WHERE c.hoja=? AND k.columna=? AND u.ubigeo_inei IS NOT NULL
+          AND (u.nivel='provincia' OR u.nombre IN ('Lima Metropolitana','Prov. Const. del Callao'))""", (hoja, col)):
+        d = inei[:4]
+        if d == "0700": d = "0701"
+        out[d] = val
+    return out
+
+# cifras del recuadro INEI: poblacion total/omitida (INDDEM06), viviendas (VIV1), hogares (INDDEM05)
+PTOT_D = by_dep("INDDEM06", "Total");            PTOT_P = by_ddpp("INDDEM06", "Total")
+POMI_D = by_dep("INDDEM06", "Poblacion | Total #2"); POMI_P = by_ddpp("INDDEM06", "Poblacion | Total #2")
+VIV_D  = by_dep("VIV1", "Total");                VIV_P  = by_ddpp("VIV1", "Total")
+HOG_D  = by_dep("INDDEM05", "Total");            HOG_P  = by_ddpp("INDDEM05", "Total")
+
+def combina(dic, nombdep):
+    n = norm(nombdep)
+    keys = ["lima metropolitana", "region lima"] if n == "lima" else \
+           ["prov. const. del callao"] if n == "callao" else [n]
+    return sum(dic.get(k, 0) or 0 for k in keys)
 
 # ---------------------------------------------------------------- 1) DATOS
 # poblacion/sexo/area por unidad de primer nivel (INDDEM01)
@@ -300,11 +354,14 @@ def dep_seg(nombdep):
             agg[m] = agg.get(m, 0) + v
     return agg
 
-def indicadores(pob, hom, muj, urb, rur, km2, seg):
+def indicadores(pob, hom, muj, urb, rur, km2, seg, ptot=0, pomit=0, viv=0, hog=0):
     pobs = pob or (seg.get("pob", 0))
     con_seg = pobs - seg.get("sin", 0)
     return {
         "pob": pobs,
+        "ptot": ptot, "pomit": pomit, "viv": viv, "hog": hog,
+        "pomis": round(pomit / ptot * 100, 1) if ptot else 0,
+        "hpv": round(hog / viv, 2) if viv else 0,
         "den": round(pobs / km2, 1) if km2 else 0,
         "purb": round(urb / pob * 100, 1) if pob else 0,
         "pmuj": round(muj / pob * 100, 1) if pob else 0,
@@ -355,7 +412,9 @@ for f in gdep["features"]:
     d, bx = geom_path(f["geometry"])
     p = dep_pob(nombdep); sg = dep_seg(nombdep)
     ind = indicadores(p.get("pob",0), p.get("hom",0), p.get("muj",0), p.get("urb",0),
-                      p.get("rur",0), ha/100.0 if ha else 0, sg)
+                      p.get("rur",0), ha/100.0 if ha else 0, sg,
+                      ptot=combina(PTOT_D,nombdep), pomit=combina(POMI_D,nombdep),
+                      viv=combina(VIV_D,nombdep), hog=combina(HOG_D,nombdep))
     ind.update({"dep": nombdep.title(), "d": d, "cod": norm(nombdep),
                 "vb": [round(bx[0]-6,1), round(bx[1]-6,1), round(bx[2]-bx[0]+12,1), round(bx[3]-bx[1]+12,1)]})
     deps.append(ind)
@@ -377,22 +436,25 @@ for f in gprov["features"]:
     d, bx = geom_path(f["geometry"])
     pp = prov_pob.get(ddpp, {}); sg = prov_seg.get(ddpp, {})
     ind = indicadores(pp.get("pob",0), 0, pp.get("muj",0), pp.get("urb",0), 0,
-                      ha/100.0 if ha else 0, sg)
+                      ha/100.0 if ha else 0, sg,
+                      ptot=PTOT_P.get(ddpp,0) or 0, pomit=POMI_P.get(ddpp,0) or 0,
+                      viv=VIV_P.get(ddpp,0) or 0, hog=HOG_P.get(ddpp,0) or 0)
     ind.update({"dep": depcod.title(), "prov": nombprov.title(), "d": d,
                 "depcod": depcod, "ubigeo": ddpp})
     provs.append(ind)
 
-total_pob = sum(x["pob"] for x in deps)
-sis_nac = sum(x["sis"] for x in deps); ess_nac = sum(x["essalud"] for x in deps)
-sin_nac = sum(x["sin"] for x in deps)
-
+def fmt(n): return f"{int(n):,}".replace(",", " ")
+S = lambda k: sum(x[k] for x in deps)
+total_pob = S("pob")
 html = HTML_TEMPLATE.replace("__DEPS__", json.dumps(deps, ensure_ascii=False))\
                     .replace("__PROVS__", json.dumps(provs, ensure_ascii=False))\
                     .replace("__W__", str(W)).replace("__H__", str(H))\
                     .replace("__TOTALN__", str(int(total_pob)))\
-                    .replace("__TOTAL__", f"{int(total_pob):,}".replace(",", " "))\
-                    .replace("__SIS__", f"{int(sis_nac):,}".replace(",", " "))\
-                    .replace("__ESS__", f"{int(ess_nac):,}".replace(",", " "))\
-                    .replace("__SIN__", f"{int(sin_nac):,}".replace(",", " "))
+                    .replace("__PTOT__", fmt(S("ptot"))).replace("__CENS__", fmt(total_pob))\
+                    .replace("__OMIT__", fmt(S("pomit"))).replace("__VIV__", fmt(S("viv")))\
+                    .replace("__HOG__", fmt(S("hog")))\
+                    .replace("__SIS__", fmt(S("sis"))).replace("__ESS__", fmt(S("essalud")))\
+                    .replace("__SIN__", fmt(S("sin")))
 open(os.path.join(HERE, "index.html"), "w", encoding="utf-8").write(html)
-print(f"index.html: {len(deps)} departamentos, {len(provs)} provincias | pob {int(total_pob):,}")
+print(f"index.html: {len(deps)} dep, {len(provs)} prov | total {fmt(S('ptot'))} censada {fmt(total_pob)} "
+      f"omitida {fmt(S('pomit'))} viviendas {fmt(S('viv'))} hogares {fmt(S('hog'))}")
