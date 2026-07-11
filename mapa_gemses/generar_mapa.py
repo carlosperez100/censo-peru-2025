@@ -51,6 +51,20 @@ header{background:linear-gradient(120deg,var(--navy),var(--blue) 58%,var(--teal)
 .ind.salud.active{background:var(--teal);border-color:var(--teal)}
 .ind.oferta.active{background:var(--gold);border-color:var(--gold);color:#3a2d00}
 .ind.equidad.active{background:#8c141e;border-color:#8c141e;color:#fff}
+/* pestañas de tema */
+.themes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;border-bottom:2px solid var(--line);padding-bottom:12px}
+.theme{border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:9px 14px;font-size:13.5px;font-weight:800;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:8px;transition:.15s}
+.theme:hover{border-color:var(--blue2)}
+.theme::before{content:"";width:10px;height:10px;border-radius:50%;flex:none}
+.theme.demo::before{background:var(--navy)}.theme.salud::before{background:var(--teal)}
+.theme.ofe::before{background:var(--gold)}.theme.gap::before{background:#8c141e}
+.theme.active{color:#fff}
+.theme.demo.active{background:var(--navy);border-color:var(--navy)}
+.theme.salud.active{background:var(--teal);border-color:var(--teal)}
+.theme.ofe.active{background:var(--gold);border-color:var(--gold);color:#3a2d00}
+.theme.gap.active{background:#8c141e;border-color:#8c141e}
+.theme.active::before{background:currentColor}
+.hint{font-size:12.5px;color:var(--muted);margin:2px 0 10px}
 .bc{display:flex;align-items:center;gap:8px;font-size:13px;margin:10px 0 6px;color:var(--muted)}
 .bc button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:3px 9px;font-size:12px;cursor:pointer;color:var(--blue)}
 .bc b{color:var(--navy)}
@@ -112,14 +126,9 @@ footer .gem{color:var(--navy);font-weight:700}
 
 <div class="wrap">
   <div class="card">
-    <div class="grp">Demografía</div>
-    <div class="controls" id="cDemo"></div>
-    <div class="grp">Salud — afiliación a seguro</div>
-    <div class="controls" id="cSalud"></div>
-    <div class="grp">Oferta de salud — SUSALUD (por 10 000 hab)</div>
-    <div class="controls" id="cOferta"></div>
-    <div class="grp">Brecha y equidad — oferta vs demanda</div>
-    <div class="controls" id="cEquidad"></div>
+    <div class="themes" id="themes"></div>
+    <div class="hint" id="hint"></div>
+    <div class="controls" id="inds"></div>
     <div class="bc" id="bc"></div>
     <svg id="map" viewBox="0 0 __W__ __H__" role="img" aria-label="Mapa del Perú"></svg>
     <div class="legend"><span id="lmin">0</span><div class="ramp" id="ramp"></div><span id="lmax">—</span></div>
@@ -280,15 +289,29 @@ function nac(){ const s=k=>DEPS.reduce((a,d)=>a+(d[k]||0),0); const pob=s("pob")
   psis:+(s("sis")/pob*100).toFixed(1),pess:+(s("essalud")/pob*100).toFixed(1),
   ppri:+(s("priv")/pob*100).toFixed(1),pomis:+(s("pomit")/ptot*100).toFixed(1)}; }
 
-// controles
-document.getElementById("cDemo").innerHTML=DEMO.map((i,x)=>`<button class="ind${x===0?' active':''}" data-k="${i.k}">${i.t}</button>`).join("");
-document.getElementById("cSalud").innerHTML=SALUD.map(i=>`<button class="ind salud" data-k="${i.k}">${i.t}</button>`).join("");
-document.getElementById("cOferta").innerHTML=OFERTA.map(i=>`<button class="ind oferta" data-k="${i.k}">${i.t}</button>`).join("");
-document.getElementById("cEquidad").innerHTML=EQUIDAD.map(i=>`<button class="ind equidad" data-k="${i.k}">${i.t}</button>`).join("");
-document.querySelectorAll(".ind").forEach(b=>b.addEventListener("click",()=>{
- document.querySelectorAll(".ind").forEach(x=>x.classList.remove("active"));
- b.classList.add("active"); cur=ALL.find(i=>i.k===b.dataset.k); render();}));
-render();
+// controles: pestañas de tema + indicadores del tema activo
+const THEMES=[
+ {k:"demo",t:"Demografía",cls:"",list:DEMO,d:"Población, vivienda y hogares del censo (INEI)."},
+ {k:"salud",t:"Salud · seguro",cls:"salud",list:SALUD,d:"Afiliación a seguro de salud: SIS, EsSalud, privado, sin seguro (cuadro SALUD06)."},
+ {k:"ofe",t:"Oferta (SUSALUD)",cls:"oferta",list:OFERTA,d:"Recursos humanos e IPRESS por 10 000 hab (SUSALUD)."},
+ {k:"gap",t:"Brecha y equidad",cls:"equidad",list:EQUIDAD,d:"Suficiencia (umbral OMS 44,5) y equidad: oferta frente a la población y su seguro."},
+];
+let curTheme=THEMES[0];
+function renderInds(){
+ document.getElementById("hint").textContent=curTheme.d;
+ document.getElementById("inds").innerHTML=curTheme.list.map(i=>
+   `<button class="ind ${curTheme.cls} ${i.k===cur.k?'active':''}" data-k="${i.k}">${i.t}</button>`).join("");
+ document.querySelectorAll("#inds .ind").forEach(b=>b.addEventListener("click",()=>{
+   cur=ALL.find(i=>i.k===b.dataset.k); renderInds(); render();}));
+}
+function renderThemes(){
+ document.getElementById("themes").innerHTML=THEMES.map(th=>
+   `<button class="theme ${th.k} ${th===curTheme?'active':''}" data-k="${th.k}">${th.t}</button>`).join("");
+ document.querySelectorAll(".theme").forEach(b=>b.addEventListener("click",()=>{
+   curTheme=THEMES.find(t=>t.k===b.dataset.k); cur=curTheme.list[0];
+   renderThemes(); renderInds(); render();}));
+}
+renderThemes(); renderInds(); render();
 detail([...DEPS].sort((a,b)=>b.pob-a.pob)[0]);
 </script>
 </body>
