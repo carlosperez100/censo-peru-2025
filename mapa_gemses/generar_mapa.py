@@ -92,7 +92,8 @@ footer .gem{color:var(--navy);font-weight:700}
     <div class="htxt">
       <h1>Censo Nacional 2025 · Perú — Modelo GEMSES</h1>
       <p>Población y <b>afiliación a seguro de salud</b> por departamento y provincia · datos oficiales del INEI ·
-         <a href="comparativo.html" style="color:#ffe08a;text-decoration:underline;font-weight:700">Perú vs el mundo →</a></p>
+         <a href="comparativo.html" style="color:#ffe08a;text-decoration:underline;font-weight:700">Perú vs el mundo →</a> ·
+         <a href="tablas.html" style="color:#ffe08a;text-decoration:underline;font-weight:700">Tablas de detalle →</a></p>
     </div>
   </div>
   <div class="hsum">

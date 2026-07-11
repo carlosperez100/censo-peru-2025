@@ -59,6 +59,14 @@ DIMENSIONES            HECHOS                        GRAFO
   Callao, Lima Metropolitana y Región Lima) → 192 provincias → 1.878 distritos, con
   puntero `padre_id` (= árbol/grafo).
 
+## 📋 Tablas de detalle (por ubigeo, descargables)
+**→ https://carlosperez100.github.io/censo-peru-2025/tablas.html**
+Navegador ordenable/buscable con el detalle **por departamento (25), provincia (194) y distrito (1 892)**,
+un indicador por columna, y descarga en **CSV** (`tablas/departamentos.csv`, `provincias.csv`, `distritos.csv`).
+Auditado: la población por distrito suma exactamente la censada nacional (32 706 028) y cada distrito suma a
+su provincia. A nivel distrito hay población + oferta (IPRESS/RR.HH.); seguro, viviendas y hogares llegan
+hasta provincia/departamento en el censo.
+
 ## Cómo consultar
 
 ```bash

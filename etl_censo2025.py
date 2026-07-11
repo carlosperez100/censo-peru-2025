@@ -123,7 +123,7 @@ def build_ubigeo(archivo_flagship):
     wb = openpyxl.load_workbook(os.path.join(RAW, archivo_flagship), data_only=True)
     ws = wb["INDDEM01"]
     grid, maxr, maxc = build_grid(ws)
-    _, _, _, filas = parse_sheet(grid, maxr, maxc)
+    _, _, col_path, filas = parse_sheet(grid, maxr, maxc)
     # grupos de edad: "menores de..." o contienen "año/años" como palabra.
     # OJO: usar limite de palabra (\bano\b), si no "Marañon"->"maranon" contiene "ano".
     def es_edad(n):
@@ -131,17 +131,28 @@ def build_ubigeo(archivo_flagship):
     # geografia = etiquetas que NO son grupos de edad ni notas/fuentes al pie
     def es_ruido(n):
         return n.startswith("nota") or n.startswith("fuente") or n.startswith("1/") or len(n) > 55
-    heads = [clean(etq) for _, etq, vals in filas
-             if clean(etq) and not es_edad(norm(etq)) and not es_ruido(norm(etq))]
+    # cada head lleva sus valores de poblacion (Total/urbana/rural/sexo) de la misma fila
+    heads = []
+    for _, etq, vals in filas:
+        if not clean(etq) or es_edad(norm(etq)) or es_ruido(norm(etq)):
+            continue
+        vd = {col_path.get(c, ""): v for c, v in vals}
+        heads.append((clean(etq), vd))
+    pobvals = {}   # ubigeo_id -> {pob,hom,muj,urb,rur}
+    def capturar(uid, vd):
+        pobvals[uid] = dict(pob=vd.get("Total", 0) or 0, hom=vd.get("Población | Hombre", 0) or 0,
+                            muj=vd.get("Población | Mujer", 0) or 0, urb=vd.get("Total #2", 0) or 0,
+                            rur=vd.get("Total #3", 0) or 0)
     peru_id = "0000"
     ubigeos = [(peru_id, "Peru", "peru", "nacional", None, None)]
     seen = {peru_id}
     cur_top = peru_id; cur_prov = None
     prov_ctr = {}; dist_ctr = {}
-    for h in heads:
+    capturar(peru_id, {})
+    for h, vd in heads:
         n = norm(h)
         if n == "peru":
-            cur_top = peru_id; cur_prov = None
+            cur_top = peru_id; cur_prov = None; capturar(peru_id, vd)
         elif n.startswith("provincia "):                     # --- PROVINCIA ---
             nombre = clean(h)[len("PROVINCIA "):].strip()
             cod = cur_top[:2]
@@ -149,7 +160,7 @@ def build_ubigeo(archivo_flagship):
             uid = cod + f"{prov_ctr[cod]:02d}"
             while uid in seen: uid += "x"
             ubigeos.append((uid, nombre.title(), norm(nombre), "provincia", cur_top, cod))
-            seen.add(uid); cur_prov = uid; dist_ctr[uid] = 0
+            seen.add(uid); cur_prov = uid; dist_ctr[uid] = 0; capturar(uid, vd)
         elif n.startswith("distrito "):                      # --- DISTRITO ---
             nombre = clean(h)[len("DISTRITO "):].strip()
             padre = cur_prov or cur_top
@@ -157,16 +168,16 @@ def build_ubigeo(archivo_flagship):
             uid = padre + f"d{dist_ctr[padre]:02d}"
             while uid in seen: uid += "x"
             ubigeos.append((uid, nombre.title(), norm(nombre), "distrito", padre, cur_top[:2]))
-            seen.add(uid)
+            seen.add(uid); capturar(uid, vd)
         else:                                                # --- DEPARTAMENTO / Callao / Lima ---
             uid = cod_top(n, len([u for u in ubigeos if u[3]=="departamento"])+1)
             nombre = "Prov. Const. del Callao" if "callao" in n else clean(h).title()
             if uid not in seen:
                 ubigeos.append((uid, nombre, n, "departamento", peru_id, uid[:2]))
                 seen.add(uid); prov_ctr[uid[:2]] = 0
-            cur_top = uid; cur_prov = None
+            cur_top = uid; cur_prov = None; capturar(uid, vd)
     wb.close()
-    return ubigeos
+    return ubigeos, pobvals
 
 # ---------------------------------------------------------------- indexado UBIGEO oficial
 ALIAS_GEO = {"nasca": "nazca", "kimbiri": "quimbiri", "raimondi": "raymondi"}  # censo 2025 -> catalogo
@@ -268,6 +279,10 @@ def main():
     CREATE TABLE dim_ubigeo(ubigeo_id TEXT PRIMARY KEY, nombre TEXT, nombre_norm TEXT,
                             nivel TEXT, padre_id TEXT, cod_departamento TEXT,
                             ubigeo_inei TEXT);
+    -- poblacion por ubigeo en los 3 niveles (dep/prov/dist), capturada de INDDEM01
+    CREATE TABLE poblacion_ubigeo(ubigeo_id TEXT PRIMARY KEY, ubigeo_inei TEXT, nivel TEXT,
+                            nombre TEXT, departamento TEXT, provincia TEXT,
+                            pob INT, hombres INT, mujeres INT, urbana INT, rural INT);
     -- dimensiones factorizadas (star schema) -> base ligera
     CREATE TABLE dim_fila(fila_id INTEGER PRIMARY KEY, etiqueta TEXT, etiqueta_norm TEXT);
     CREATE TABLE dim_columna(col_id INTEGER PRIMARY KEY, columna TEXT);
@@ -280,11 +295,31 @@ def main():
     """)
 
     # dim_ubigeo + indexado UBIGEO oficial (INEI)
-    ubis = build_ubigeo("01_indicadores_demograficos.xlsx")
+    ubis, pobvals = build_ubigeo("01_indicadores_demograficos.xlsx")
     inei = resolver_ubigeo(ubis)
     ubis_i = [u + (inei.get(u[0]),) for u in ubis]
     cx.executemany("INSERT INTO dim_ubigeo VALUES(?,?,?,?,?,?,?)", ubis_i)
     ubi_norms = {u[2] for u in ubis}
+    # poblacion_ubigeo (con nombre de dep/prov derivado de la jerarquia)
+    byid = {u[0]: u for u in ubis}
+    def dep_prov(u):
+        uid, nom, _, niv, padre, _ = u
+        if niv == "departamento": return nom, ""
+        if niv == "provincia":    return (byid[padre][1] if padre in byid else ""), nom
+        if niv == "distrito":
+            pa = byid.get(padre)
+            if pa and pa[3] == "provincia":
+                gp = byid.get(pa[4]); return (gp[1] if gp else ""), pa[1]
+            return (pa[1] if pa else ""), ""
+        return "", ""
+    filas_pob = []
+    for u in ubis:
+        if u[3] == "nacional": continue
+        pv = pobvals.get(u[0], {}); dep, prov = dep_prov(u)
+        filas_pob.append((u[0], inei.get(u[0]), u[3], u[1], dep, prov,
+                          int(pv.get("pob",0)), int(pv.get("hom",0)), int(pv.get("muj",0)),
+                          int(pv.get("urb",0)), int(pv.get("rur",0))))
+    cx.executemany("INSERT INTO poblacion_ubigeo VALUES(?,?,?,?,?,?,?,?,?,?,?)", filas_pob)
     n_ok = sum(1 for u in ubis if inei.get(u[0]))
     print(f"  UBIGEO INEI resuelto: {n_ok}/{len(ubis)} nodos")
     # exportar pendientes (nodos sin codigo) con su contexto -> plantilla para overrides
